@@ -4,7 +4,7 @@ from scenes.menu_scene import MenuScene
 from scenes.rules_scene import RulesScene
 from music import Music
 from assets import Assets
-from models.db_connector import DBConnector
+from models.db.db_connector import DBConnector
 from models.yoyo.yoyo_connection import yoyoConnection
 from models.yoyo.yoyo_opirations import yoyoOperations
 
@@ -37,6 +37,9 @@ def main():
     scene_manager.register("game", GameScene(ev_manager, ui_manager, assets))
 
     game_model.run()
+    
+    game_id = db_connector.create_new_game()
+    print(game_id)
 
 if __name__ == "__main__":
     main()

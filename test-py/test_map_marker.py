@@ -10,7 +10,7 @@ sys.path.insert(
     )
 )
 
-from src.map_marker import Node
+from entities.map_node import Node
 
 
 def test_city_hit_test():

@@ -78,7 +78,7 @@ class Node:
 
         if self.text_surface:
             surface.blit(self._shadow_surf, self.shadow_rect)
-            surface.blit(self.text_surface, self.text_rect)
+            surface.blit(self.text_surface, self.text_rect)  # ty: ignore[invalid-argument-type]
 
     def hit_test(self, mouse_pos: tuple[int, int]) -> bool:
         """

@@ -37,6 +37,12 @@ class MapScaleEvent(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class GameStartedEvent(Event):
+    game_id: int
+    name: str = field(default="GameStartedEvent", init=False)
+
+
+@dataclass(frozen=True, slots=True)
 class RouteSelectedEvent(Event):
     """A player confirmed a route during their turn."""
     name: str = field(default="Route selected event", init=False)

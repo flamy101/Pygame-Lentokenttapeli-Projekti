@@ -22,7 +22,7 @@ steps = [
           and longitude_deg < 50
           AND ident NOT IN (
               'HEGN', 'HTZA', 'HTDA', 'TN-0002', 'FDSK', 'HUEN', 'GBYD', 'GOBD',
-              'FAOR', 'GQNO', 'DGAA', 'DNAA', 'HKJK', 'FQMA', 'FZAA', 'HESH'
+              'FAOR', 'GQNO', 'DGAA', 'DNAA', 'HKJK', 'FQMA', 'FZAA', 'HESH', 'DNMM', 'FKKD', 'FAOR', 'DTTA', 'HRYR'
           );
         """
     )

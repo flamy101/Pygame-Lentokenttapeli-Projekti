@@ -29,7 +29,7 @@ def create_game(connection, name):
             color,
             money,
             current_node_id,
-            turn_order,
+            turn_order
         )
         VALUES (?, ?, ?, ?, ?, ?)
     """, (

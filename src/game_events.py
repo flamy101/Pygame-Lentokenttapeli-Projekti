@@ -34,3 +34,18 @@ class MapMoveEvent(Event):
 class MapScaleEvent(Event):
     name: str = field(default="Map scale event", init=False)
     zoom: float= field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class RouteSelectedEvent(Event):
+    """A player confirmed a route during their turn."""
+    name: str = field(default="Route selected event", init=False)
+    route_id: str = field(init=True, repr=True)
+    player_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class CurrentPlayerChangedEvent(Event):
+    """Announces whose turn is currently active."""
+    name: str = field(default="Current player changed event", init=False)
+    player_id: str = field(init=True, repr=True)

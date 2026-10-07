@@ -6,7 +6,7 @@ from music import Music
 from assets import Assets
 from models.db.db_connector import DBConnector
 from models.yoyo.yoyo_connection import YoyoConnection
-from models.yoyo.yoyo_opirations import YoyoOperations
+from models.yoyo.yoyo_operations import YoyoOperations
 
 import ui
 import scenes

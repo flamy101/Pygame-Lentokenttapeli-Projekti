@@ -6,28 +6,35 @@ from ui import UIElement
 
 
 class PlayerHUD(UIElement):
-    """Draw the current player's money in the prototype wallet panel.
+    """Draw a bound player's wallet, inventory card, and color badge.
 
     The wallet texture includes the coin swatch. The money value is read from
     ``player.money`` on every draw, so changes appear without a separate event
-    or a standalone MoneyDisplay element.
+    or a standalone MoneyDisplay element. The owner of this HUD is responsible
+    for calling ``bind`` when the active player changes.
     """
 
     def __init__(
         self,
-        rect,
-        player,
-        assets,
+        ev_manager=None,
+        player=None,
+        rect=None,
+        assets=None,
         z_index=0,
         font=None,
         icon=None,
         inventory_rect=None,
-        ev_manager=None,
     ):
+        # Keep accepting the previous PlayerHUD(rect, player, assets) form.
+        if isinstance(ev_manager, pygame.Rect):
+            old_rect, old_player, old_assets = ev_manager, player, rect
+            ev_manager, player, rect, assets = None, old_player, old_rect, old_assets
+        if player is None or rect is None or assets is None:
+            raise TypeError("PlayerHUD requires a player, rect, and assets")
+
         super().__init__(rect, z_index)
         self.player = player
         self.assets = assets
-        # Kept for a consistent HUD constructor; this widget only reads state.
         self.ev_manager = ev_manager
         self.font = font if font is not None else assets.font("default")
         self.small_font = font if font is not None else assets.font("default")
@@ -42,6 +49,10 @@ class PlayerHUD(UIElement):
                 inventory_height,
             )
         self.inventory_rect = pygame.Rect(inventory_rect)
+
+    def bind(self, player):
+        """Change which player's live state this panel displays."""
+        self.player = player
 
     @staticmethod
     def _format_money(value):
@@ -112,6 +123,12 @@ class PlayerHUD(UIElement):
         pygame.draw.rect(screen, (65, 45, 50), panel)
         pygame.draw.rect(screen, (220, 170, 95), panel, 3)
 
+        badge_radius = max(5, min(12, (panel.height - 24) // 2))
+        badge_center = (panel.right - 18, panel.top + 18)
+        player_color = getattr(self.player, "color", (180, 180, 180))
+        pygame.draw.circle(screen, player_color, badge_center, badge_radius)
+        pygame.draw.circle(screen, (30, 30, 30), badge_center, badge_radius, 1)
+
         rows = self._item_rows(getattr(self.player, "items", None))
         if not rows:
             return
@@ -123,7 +140,7 @@ class PlayerHUD(UIElement):
         for index, (icon_key, quantity) in enumerate(rows):
             col, row = index % columns, index // columns
             left = panel.left + padding + col * cell_size
-            top = panel.top + padding + row * cell_size
+            top = panel.top + 36 + row * cell_size
             if top + cell_size > panel.bottom - padding:
                 break
 

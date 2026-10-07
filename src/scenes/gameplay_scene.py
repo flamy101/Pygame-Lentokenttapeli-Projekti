@@ -110,7 +110,8 @@ class GameScene(Scene):
                 color=(20, 100, 0),
                 container=self.map_container,
                 texture=self.assets.image("map"),
-                nodes=self.nodes
+                nodes=self.nodes,
+                ui_manager=self.ui_manager,
             )
             self.elements.append(self.game_map)
 

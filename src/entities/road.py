@@ -8,6 +8,9 @@ class Road:
     STYLES: Dict[str, Dict[str, Any]] = {
         "highway": {"color": (220, 220, 50), "width": 5, "dash": None},
         "main": {"color": (200, 200, 200), "width": 3, "dash": None},
+        "land": {"color": (245, 218, 105), "width": 18, "dash": None},
+        "sea": {"color": (70, 190, 235), "width": 20, "dash": (36, 18)},
+        "flight": {"color": (255, 120, 70), "width": 24, "dash": (12, 10)},
         "dirt": {
             "color": (139, 90, 43),
             "width": 2,
@@ -102,38 +105,30 @@ class Road:
 
         for i in range(1, len(points)):
             end_pt = points[i]
-            dx = end_pt[0] - start_pt[0]
-            dy = end_pt[1] - start_pt[1]
-            seg_len = math.hypot(dx, dy)
-
-            if seg_len == 0:
-                continue
-
-            remaining = seg_len
-            curr_start = start_pt
+            curr_x, curr_y = float(start_pt[0]), float(start_pt[1])
+            remaining = math.hypot(end_pt[0] - curr_x, end_pt[1] - curr_y)
 
             while remaining > 0:
                 limit = dash_len if drawing else gap_len
                 available = limit - dist_along
+                step = min(remaining, available)
+                dx = end_pt[0] - curr_x
+                dy = end_pt[1] - curr_y
+                ratio = step / remaining
+                next_x = curr_x + dx * ratio
+                next_y = curr_y + dy * ratio
 
-                if remaining < available:
-                    if drawing:
-                        segments.append((curr_start, end_pt))
-                    dist_along += remaining
-                    remaining = 0
-                else:
-                    ratio = available / remaining
-                    break_x = curr_start[0] + dx * ratio
-                    break_y = curr_start[1] + dy * ratio
-                    break_pt = (int(break_x), int(break_y))
+                if drawing and step > 0:
+                    segments.append(
+                        ((round(curr_x), round(curr_y)), (round(next_x), round(next_y)))
+                    )
 
-                    if drawing:
-                        segments.append((curr_start, break_pt))
-
+                curr_x, curr_y = next_x, next_y
+                remaining -= step
+                dist_along += step
+                if dist_along >= limit:
                     dist_along = 0.0
                     drawing = not drawing
-                    curr_start = break_pt
-                    remaining -= available
 
             start_pt = end_pt
 

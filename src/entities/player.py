@@ -47,6 +47,7 @@ class Player:
         self.ev_manager = ev_manager
         self.db_connector = db_connector
         self.items: dict[str, int] = {}
+        self.sprite: pygame.Surface | None = None
 
         # Keep the precise position as floats; pygame.Rect stores only rounded
         # integer coordinates and is updated by assignment in _sync_rect().
@@ -69,9 +70,27 @@ class Player:
         """Assign rounded render coordinates without mutating Rect by floats."""
         self.rect.center = (round(self.x), round(self.y))
 
-    def draw(self, screen: pygame.Surface):
-        self._sync_rect()
-        pygame.draw.circle(screen, self.color, self.rect.center, self.token_radius)
+    def draw(
+        self,
+        screen: pygame.Surface,
+        position: tuple[float, float] | None = None,
+        radius: int | None = None,
+    ):
+        """Draw the player token, optionally at a view-scaled screen position."""
+        if position is None:
+            self._sync_rect()
+            center = self.rect.center
+        else:
+            center = (round(position[0]), round(position[1]))
+
+        draw_radius = radius if radius is not None else self.token_radius
+        if self.sprite is not None:
+            size = max(2, draw_radius * 2)
+            sprite = pygame.transform.smoothscale(self.sprite, (size, size))
+            screen.blit(sprite, sprite.get_rect(center=center))
+        else:
+            pygame.draw.circle(screen, self.color, center, draw_radius)
+            pygame.draw.circle(screen, (255, 255, 255), center, draw_radius, 2)
 
     def _apply_node_tokens(self, node):
         tokens = getattr(node, "tokens", None)

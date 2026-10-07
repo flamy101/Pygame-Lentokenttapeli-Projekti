@@ -35,6 +35,9 @@ class TurnManager:
         self.route_arrows: list[RouteArrow] = []
 
         ev_manager.register_listener(self)
+        player_order_str = ", ".join([f"{p.name} (ID: {p.id})" for p in self.players])
+        print(f"[DEBUG] TurnManager ready. Players: [{player_order_str}]. Active player: {self.current_player.name}")
+
         ev_manager.post(
             game_events.CurrentPlayerChangedEvent(self.current_player.id)
         )
@@ -42,11 +45,18 @@ class TurnManager:
     def notify(self, event):
         if isinstance(event, game_events.ReachableRoutesFoundEvent):
             if self.current_player is not None and event.player_id == self.current_player.id:
+                print(f"[DEBUG] ReachableRoutesFoundEvent: Found {len(event.routes)} route(s) for Player {event.player_id}")
                 self._show_routes(event.routes)
+            else:
+                print(f"[DEBUG] Ignored ReachableRoutesFoundEvent for Player {event.player_id} (Active player is {self.current_player.id if self.current_player else 'None'})")
+
         elif isinstance(event, game_events.RouteConfirmedEvent):
+            print(f"[DEBUG] RouteConfirmedEvent received for route target: {getattr(getattr(event, 'route', None), 'end_node', None)}")
             self._confirm_route(event)
 
     def _clear_arrows(self):
+        if self.route_arrows:
+            print(f"[DEBUG] Clearing {len(self.route_arrows)} route arrows from map.")
         for arrow in self.route_arrows:
             if hasattr(arrow, "kill"):
                 arrow.kill()
@@ -56,10 +66,12 @@ class TurnManager:
         self._clear_arrows()
         self.available_routes = list(routes)
         if not self.available_routes:
+            print("[DEBUG] No available routes found. Advancing turn...")
             self._advance_turn()
             return
 
         if self.map_view is None or self.current_player is None:
+            print("[WARNING] Map view or active player missing; route arrows cannot be displayed.")
             return
 
         from_node = self.current_player.current_node
@@ -82,6 +94,8 @@ class TurnManager:
                 self.map_view.add_element(arrow)
                 self.route_arrows.append(arrow)
 
+        print(f"[DEBUG] Added {len(self.route_arrows)} route arrows to the map.")
+
     def _confirm_route(self, event):
         route = getattr(event, "route", None)
         if route is None or self.current_player is None:
@@ -92,6 +106,7 @@ class TurnManager:
         end_node = getattr(route, "end_node", None)
 
         if end_node is not None:
+            print(f"[DEBUG] Player {self.current_player.id} moving from node {from_node_id} to node {end_node.id}")
             self.current_player.current_node = end_node
             self.ev_manager.post(
                 game_events.PlayerMovedEvent(
@@ -111,6 +126,8 @@ class TurnManager:
         prev_player_id = self.current_player.id
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
         self.current_player = self.players[self.current_player_index]
+
+        print(f"[DEBUG] Turn Advanced: {prev_player_id} -> {self.current_player.id} ({self.current_player.name})")
 
         self.ev_manager.post(
             game_events.TurnEndedEvent(

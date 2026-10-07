@@ -28,7 +28,8 @@ class MapProjector:
         norm_x = (lon - self.min_lon) / self.lon_range
         norm_y = (self.max_lat - lat) / self.lat_range
 
-        px_x = round(norm_x * self.width)
-        px_y = round(norm_y * self.height)
+        
+        px_x = round(norm_x * (self.width - 1))
+        px_y = round(norm_y * (self.height - 1))
 
         return px_x, px_y

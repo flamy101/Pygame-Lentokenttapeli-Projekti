@@ -17,33 +17,39 @@ class DBConnector:
     def notify(self, event):
         match event:
             case events.PygameReadyEvent():
-                print("Checking for connection...")
+                print("[DEBUG] DBConnector: Received PygameReadyEvent. Testing database connection...")
                 self.is_connected()
 
     def is_connected(self):
         if getenv("DEBUG") == "TRUE":
+            print("[DEBUG] MariaDB: DEBUG mode enabled in environment variables. Mocking success connection.")
             self.ev_manager.post(events.DBConnect(True))
             return True
 
         try:
+            db_host = getenv("DB_HOST")
+            db_name = getenv("DB_NAME")
+            print(f"[DEBUG] Attempting MariaDB connection to {db_host} (database: {db_name})...")
             self.connection = mariadb.connect(
-                host=getenv("DB_HOST"),
+                host=db_host,
                 port=int(getenv("DB_PORT", 3306)),
                 user=getenv("DB_USER"),
                 password=getenv("DB_PASSWORD"),
-                database=getenv("DB_NAME"),
+                database=db_name,
             )
+            print("[DEBUG] MariaDB: Connected successfully!")
             self.ev_manager.post(events.DBConnect(True))
             return True
 
         except mariadb.Error as error:
-            print(f"MariaDB error: {error}")
+            print(f"[ERROR] MariaDB Connection failed: {error}")
             self.ev_manager.post(events.DBConnect(False))
             self.ev_manager.post(events.DatabaseConnectionFailed(True))
             return False
 
     def create_new_game(self, player_name: str = "Player 1"):
         game_id = db_operations.create_game(self.connection, name=player_name)
+        print(f"[DEBUG] DB Operations: Created new game (Game ID: {game_id})")
         return game_id
 
     # HELPERS
@@ -51,7 +57,8 @@ class DBConnector:
         cursor = self.connection.cursor(dictionary=True)
         try:
             cursor.execute(query, params)
-            return cursor.fetchall() or []
+            results = cursor.fetchall() or []
+            return results
         finally:
             cursor.close()
 
@@ -75,7 +82,9 @@ class DBConnector:
 
     # NODES
     def get_all_nodes(self) -> list[dict]:
-        return self._fetch_all("SELECT * FROM nodes")
+        res = self._fetch_all("SELECT * FROM nodes")
+        print(f"[DEBUG] DB Query `get_all_nodes`: Returned {len(res)} row(s).")
+        return res
 
     def get_node(self, node_id: int) -> dict:
         return self._fetch_one("SELECT * FROM nodes WHERE id = %s", (node_id,))
@@ -94,7 +103,9 @@ class DBConnector:
 
     # ROADS
     def get_all_roads(self) -> list[dict]:
-        return self._fetch_all("SELECT * FROM roads")
+        res = self._fetch_all("SELECT * FROM roads")
+        print(f"[DEBUG] DB Query `get_all_roads`: Returned {len(res)} row(s).")
+        return res
 
     def get_roads_from(self, node_id: int) -> list[dict]:
         return self._fetch_all(
@@ -151,9 +162,11 @@ class DBConnector:
 
     # GAMES
     def insert_game(self) -> int:
-        return self._execute(
+        game_id = self._execute(
             "INSERT INTO games (current_turn, is_finished) VALUES (0, 0)"
         )
+        print(f"[DEBUG] DB Execution `insert_game`: Game record created with ID {game_id}.")
+        return game_id
 
     def get_game(self, game_id: int) -> dict:
         return self._fetch_one("SELECT * FROM games WHERE id = %s", (game_id,))
@@ -180,9 +193,11 @@ class DBConnector:
                 INSERT INTO players (game_id, name, color, money, current_node_id, turn_order)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """
-        return self._execute(
+        player_id = self._execute(
             query, (game_id, name, color, money, current_node_id, turn_order)
         )
+        print(f"[DEBUG] DB Execution `insert_player`: Inserted '{name}' (ID: {player_id}) for Game {game_id}.")
+        return player_id
 
     def get_player(self, player_id: int) -> dict:
         return self._fetch_one("SELECT * FROM players WHERE id = %s", (player_id,))

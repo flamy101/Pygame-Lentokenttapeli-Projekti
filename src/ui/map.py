@@ -17,6 +17,7 @@ class Map(UIElement):
         nodes=None,
         roads=None,
         routes=None,
+        players=None,
         ui_manager=None,
     ):
         """
@@ -50,6 +51,7 @@ class Map(UIElement):
         self.nodes = nodes or []
         self.roads = roads or []
         self.routes = routes or []
+        self.players = players or []
 
         self.content_surface = pygame.Surface(texture.get_size(), pygame.SRCALPHA)
         self._scaled_content = None
@@ -178,5 +180,26 @@ class Map(UIElement):
             self._scaled_content_size = current_size
 
         screen.blit(self._scaled_content, self.map_surface.topleft)
+
+        scale_x = self.map_surface.width / self.content_surface.get_width()
+        scale_y = self.map_surface.height / self.content_surface.get_height()
+        player_groups = {}
+        for player in self.players:
+            if player.is_eliminated:
+                continue
+            key = str(player.current_node.id)
+            player_groups.setdefault(key, []).append(player)
+
+        for group in player_groups.values():
+            count = len(group)
+            for index, player in enumerate(group):
+                map_x = player.x
+                map_y = player.y
+                offset = (index - (count - 1) / 2) * 34
+                screen_pos = (
+                    self.x + map_x * scale_x + offset,
+                    self.y + map_y * scale_y,
+                )
+                player.draw(screen, position=screen_pos, radius=10)
 
         screen.set_clip(previous_clip)

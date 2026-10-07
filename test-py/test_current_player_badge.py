@@ -1,6 +1,5 @@
 import pygame
 
-import game_events
 from ui.elements import CurrentPlayerBadge
 
 
@@ -30,7 +29,7 @@ class Assets:
         return pygame.font.SysFont("Arial", 16)
 
 
-def test_badge_initializes_and_rebinds_on_turn_ended():
+def test_badge_can_be_bound_and_draws_the_selected_player():
     pygame.init()
     try:
         first = Player(1, "First", (200, 20, 30), 1)
@@ -49,7 +48,7 @@ def test_badge_initializes_and_rebinds_on_turn_ended():
         badge.draw(screen)
         assert screen.get_at((20, 34))[:3] == first.color
 
-        manager.post(game_events.TurnEndedEvent(next_player_id=2))
+        badge.bind(second)
         assert badge.current_player is second
         badge.draw(screen)
         assert screen.get_at((20, 34))[:3] == second.color

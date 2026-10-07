@@ -1,6 +1,4 @@
 import pygame
-import game_events
-import events
 from ui import UIElement
 
 
@@ -86,24 +84,10 @@ class CurrentPlayerBadge(UIElement):
             key=lambda player: player.turn_order,
             default=None,
         )
-        ev_manager.register_listener(self)
 
-    def notify(self, event):
-        if isinstance(event, game_events.TurnEndedEvent):
-            self._bind_player(event.next_player_id)
-
-    def _bind_player(self, player_id):
-        if player_id in self.players:
-            self.current_player = self.players[player_id]
-            return
-
-        # Support lookups keyed by database IDs of a different scalar type.
-        for player in self.players.values():
-            if player.id == player_id:
-                self.current_player = player
-                return
-
-        raise KeyError(f"No player found for turn id {player_id!r}")
+    def bind(self, player):
+        """Bind the badge to the player selected by its owning scene."""
+        self.current_player = player
 
     def draw(self, screen):
         player = self.current_player

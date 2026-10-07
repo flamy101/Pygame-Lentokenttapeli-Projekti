@@ -49,3 +49,30 @@ class CurrentPlayerChangedEvent(Event):
     """Announces whose turn is currently active."""
     name: str = field(default="Current player changed event", init=False)
     player_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class PlayerMovedEvent(Event):
+    name: str = field(default="Player moved event", init=False)
+    player_id: str = field(init=True, repr=True)
+    from_node_id: str = field(init=True, repr=True)
+    to_node_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class PlayerArrivedEvent(Event):
+    name: str = field(default="Player arrived event", init=False)
+    player_id: str = field(init=True, repr=True)
+    city_node_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class PlayerEliminatedEvent(Event):
+    name: str = field(default="Player eliminated event", init=False)
+    player_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class PlayerWonEvent(Event):
+    name: str = field(default="Player won event", init=False)
+    player_id: str = field(init=True, repr=True)

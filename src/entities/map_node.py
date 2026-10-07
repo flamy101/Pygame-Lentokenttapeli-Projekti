@@ -13,13 +13,13 @@ class Node:
         lat: float,
         lon: float,
         projector,
-        name: str = None,
+        name: str = None,  # ty: ignore[invalid-parameter-default]
         is_capital: bool = False,
         is_waypoint: bool = False,
         region: str = "default",
         radius: int = 4,
         color: tuple = (255, 255, 255),
-        font: pygame.font.Font = None,
+        font: pygame.font.Font = None,  # ty: ignore[invalid-parameter-default]
     ):
 
         self.id = node_id

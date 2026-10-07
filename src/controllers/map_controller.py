@@ -17,10 +17,14 @@ class MapController:
         return self.ui_manager is not None and self.ui_manager.modal is not None
 
     def notify(self, event):
+        if self._modal_is_open() and isinstance(
+            event,
+            (events.TickEvent, events.KeyInputEvent, events.MouseScrollEvent),
+        ):
+            return
+
         match event:
             case events.TickEvent():
-                if self._modal_is_open():
-                    return
                 if not pygame.display.get_init():
                     return
                 keys = pygame.key.get_pressed()
@@ -31,8 +35,6 @@ class MapController:
                     self.ev_manager.post(game_events.MapMoveEvent(vel_dx, vel_dy))
 
             case events.KeyInputEvent():
-                if self._modal_is_open():
-                    return
                 key = event.unicodechar
                 if key == "r" or "f":
                     match key:
@@ -42,3 +44,7 @@ class MapController:
                         case "f":
                             zoom = 1.1
                             self.ev_manager.post(game_events.MapScaleEvent(zoom))
+
+            case events.MouseScrollEvent():
+                # Map applies cursor-anchored zoom after receiving this event.
+                return

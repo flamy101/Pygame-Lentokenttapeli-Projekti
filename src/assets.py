@@ -73,6 +73,11 @@ class Assets:
             if os.path.isfile(path):
                 self.images[key] = pygame.image.load(path).convert_alpha()
 
+        empty_token = pygame.Surface((32, 32), pygame.SRCALPHA)
+        pygame.draw.circle(empty_token, (232, 224, 195), (16, 16), 15)
+        pygame.draw.circle(empty_token, (95, 85, 70), (16, 16), 15, 2)
+        self.images["token-empty"] = empty_token
+
         aliases = {
             "warning": "merkki-varoitus-lv1",
             "200_iq": "merkki-200-iq-lv2",

@@ -33,6 +33,7 @@ class TurnManager:
         self.current_player = self.players[self.current_player_index]
         self.available_routes = []
         self.route_arrows: list[RouteArrow] = []
+        self.awaiting_token_resolution = False
 
         ev_manager.register_listener(self)
         player_order_str = ", ".join([f"{p.name} (ID: {p.id})" for p in self.players])
@@ -53,6 +54,11 @@ class TurnManager:
         elif isinstance(event, game_events.RouteConfirmedEvent):
             print(f"[DEBUG] RouteConfirmedEvent received for route {event.route_id}.")
             self._confirm_route(event)
+        elif isinstance(event, game_events.TokenResolvedEvent):
+            if self.current_player is not None and event.player_id == self.current_player.id:
+                self.awaiting_token_resolution = False
+                self._clear_arrows()
+                self._advance_turn()
 
     def _clear_arrows(self):
         if self.route_arrows:
@@ -64,7 +70,18 @@ class TurnManager:
 
     def _show_routes(self, routes):
         self._clear_arrows()
-        self.available_routes = list(routes)
+        self.available_routes = [
+            route for route in routes
+            if self.current_player is not None
+            and (
+                self.current_player.money >= route.total_cost
+                or (
+                    self.current_player.money == 0
+                    and getattr(route, "road_type", None) == "sea"
+                    and len(route.segments) <= 2
+                )
+            )
+        ]
         if not self.available_routes:
             print("[DEBUG] No available routes found. Advancing turn...")
             self._advance_turn()
@@ -134,15 +151,28 @@ class TurnManager:
             return
 
         player = self.current_player
+        if not (
+            player.money >= route.total_cost
+            or (player.money == 0 and route.road_type == "sea" and len(route.segments) <= 2)
+        ):
+            print(f"[DEBUG] Player {player.id} cannot afford route {route.id}.")
+            self._clear_arrows()
+            self._advance_turn()
+            return
         player.current_route = route
         player.route_progress = 0
         for _ in path:
             if not player.advance_one_hop():
                 break
+            if self.ui_manager is not None and self.ui_manager.modal is not None:
+                break
 
         print(f"[DEBUG] Player {player.id} moved from node {from_node_id} to node {node.id}.")
 
         self._clear_arrows()
+        if self.ui_manager is not None and self.ui_manager.modal is not None:
+            self.awaiting_token_resolution = True
+            return
         self._advance_turn()
 
     def _advance_turn(self):

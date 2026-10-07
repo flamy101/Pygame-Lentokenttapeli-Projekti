@@ -19,11 +19,13 @@ class UIPopup(UIElement):
         message: str,
         buttons: list[tuple[str, Callable]],
         z_index: int = 10_000,
+        image: pygame.Surface | None = None,
     ):
         super().__init__(rect, z_index)
         self.ev_manager = ev_manager
         self.assets = assets
         self.message = message
+        self.image = image
         self.font = assets.font("default")
         self.child_buttons: list[Button] = []
 
@@ -84,10 +86,21 @@ class UIPopup(UIElement):
             default=self.rect.bottom - 12,
         )
         text_area_height = max(0, button_top - self.rect.top - 24)
+        image_height = 0
+        if self.image is not None:
+            image = self.image
+            image_width, source_height = image.get_size()
+            scale = min(1.0, 96 / max(1, image_width), 96 / max(1, source_height))
+            image = pygame.transform.smoothscale(
+                image, (max(1, round(image_width * scale)), max(1, round(source_height * scale)))
+            )
+            image_rect = image.get_rect(midtop=(self.rect.centerx, self.rect.top + 12))
+            screen.blit(image, image_rect)
+            image_height = image_rect.height + 8
         lines = self._wrapped_lines(max(1, self.rect.width - 32))
         line_height = self.font.get_linesize()
         total_text_height = len(lines) * line_height
-        y = self.rect.top + 12 + max(0, (text_area_height - total_text_height) // 2)
+        y = self.rect.top + 12 + image_height + max(0, (text_area_height - image_height - total_text_height) // 2)
 
         for line in lines:
             rendered = self.font.render(line, True, (255, 245, 225))

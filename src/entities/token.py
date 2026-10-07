@@ -13,14 +13,22 @@ class Token:
         category: str,
         money_delta: int,
         texture: pygame.Surface,
+        *,
+        texture_key: str | None = None,
+        back_texture: pygame.Surface | None = None,
+        is_claimed: bool = False,
     ):
         self.id = id
         self.token_type = token_type
         self.category = category
         self.money_delta = money_delta
         self.texture = texture
-        self.is_claimed = False
+        self.texture_key = texture_key
+        self.back_texture = back_texture
+        self.is_claimed = is_claimed
 
     def draw(self, screen: pygame.Surface, pos: tuple[int, int]):
         """Blit the token centered at its node's screen position."""
-        screen.blit(self.texture, self.texture.get_rect(center=pos))
+        image = self.back_texture or self.texture
+        if image is not None:
+            screen.blit(image, image.get_rect(center=pos))

@@ -1,5 +1,7 @@
 import random
+from collections import defaultdict
 import pygame
+import events as base_events
 
 from controllers.dice_roller import DiceRoller
 from controllers.map_controller import MapController
@@ -10,11 +12,13 @@ from entities.map_node import Node
 from entities.player import Player
 from entities.road import Road
 from entities.route import Route
+from entities.token import Token
 import game_events
 from scenes import Scene
 from ui.elements import Button, CurrentPlayerBadge, Text
 from ui.map import Map
 from ui.player_hud import PlayerHUD
+from ui.popup import UIPopup
 
 
 class GameScene(Scene):
@@ -41,6 +45,9 @@ class GameScene(Scene):
         self.roads: list[Road] = []
         self.map_nodes: list[Node] = []
         self.routes: dict = {}
+        self.game_id = None
+        self.notification_text = ""
+        self.notification_seconds = 0.0
 
     def _get_active_player(self):
         if self.turn_manager is not None and self.turn_manager.current_player is not None:
@@ -55,6 +62,9 @@ class GameScene(Scene):
             print("[DEBUG] Roll Failed: No active player or current node is None.")
             return
 
+        if player.pending_token is not None and self.route_finder is not None:
+            self.route_finder.suppress_next_roll(player.id)
+
         print(f"[DEBUG] Rolling dice for Player {player.id} (at node {player.current_node.id})...")
         self.ev_manager.post(
             game_events.RollRequestedEvent(
@@ -64,6 +74,15 @@ class GameScene(Scene):
         )
 
     def notify(self, event):
+        if isinstance(event, base_events.TickEvent):
+            self.notification_seconds = max(0.0, self.notification_seconds - event.dt)
+            return
+
+        if isinstance(event, game_events.CurrentPlayerChangedEvent):
+            player = self._lookup_player(event.player_id)
+            self._show_notification(f"{player.name}'s turn")
+            return
+
         if isinstance(event, game_events.TurnEndedEvent):
             player = self._lookup_player(event.next_player_id)
             print(f"[DEBUG] TurnEndedEvent: Transitioning to Player {player.id} ({player.name}).")
@@ -81,6 +100,161 @@ class GameScene(Scene):
             print(f"[DEBUG] DiceRolledEvent: Player {event.player_id} rolled a {event.value}.")
             if self.dice_text is not None:
                 self.dice_text.text = str(event.value)
+            if current_player.pending_token is not None:
+                token = current_player.pending_token
+                node = self.nodes.get(str(current_player.pending_token_node_id))
+                if event.value >= 4 and node is not None:
+                    self._show_notification(
+                        f"{current_player.name} rolled {event.value}: token opened"
+                    )
+                    current_player.pending_token = None
+                    current_player.pending_token_node_id = None
+                    self._reveal_token(current_player, node, token)
+                else:
+                    self._show_notification(
+                        f"{current_player.name} rolled {event.value}: token needs 4, 5, or 6"
+                    )
+                    self._show_token_result(
+                        current_player, node, token,
+                        "You need a 4, 5, or 6 to open this token. The token stays here.",
+                        resolve=True,
+                    )
+                return
+        elif isinstance(event, game_events.PlayerArrivedEvent):
+            player = self._lookup_player(event.player_id)
+            node = self.nodes.get(str(event.city_node_id))
+            if node is not None:
+                if player.has_star and (node.name or "").strip().lower() in {"cairo", "tangier"}:
+                    player.has_won = True
+                    if self.db_connector is not None:
+                        self.db_connector.set_player_won(player.id)
+                        self.db_connector.set_game_finished(int(player.game_id))
+                    self._show_token_result(
+                        player, node,
+                        Token(-1, "Victory", "neutral", 0, self.assets.image("token-empty")),
+                        f"{player.name} brought the Star of Africa to {node.name} and wins!",
+                    )
+                    return
+                self._offer_airport_token(player, node)
+        elif isinstance(event, game_events.TokenResolvedEvent):
+            return
+
+    def _show_notification(self, message: str, duration: float = 3.0):
+        self.notification_text = message
+        self.notification_seconds = duration
+        print(f"[NOTICE] {message}")
+
+    def draw(self, screen: pygame.Surface):
+        super().draw(screen)
+        if self.notification_seconds <= 0 or not self.notification_text:
+            return
+        font = self.assets.font("default")
+        text = font.render(self.notification_text, True, (255, 248, 225))
+        panel = pygame.Rect(0, 0, min(screen.get_width() - 32, text.get_width() + 36), text.get_height() + 22)
+        panel.midtop = (screen.get_width() // 2, 18)
+        background = pygame.Surface(panel.size, pygame.SRCALPHA)
+        pygame.draw.rect(background, (35, 27, 25, 225), background.get_rect(), border_radius=8)
+        pygame.draw.rect(background, (222, 169, 87, 255), background.get_rect(), 2, border_radius=8)
+        screen.blit(background, panel.topleft)
+        screen.blit(text, text.get_rect(center=panel.center))
+
+    def _popup_rect(self):
+        screen = pygame.display.get_surface()
+        width, height = screen.get_size() if screen else (1200, 900)
+        return pygame.Rect(width // 2 - 230, height // 2 - 130, 460, 260)
+
+    def _offer_airport_token(self, player, node):
+        token = next((item for item in node.tokens if not item.is_claimed), None)
+        if token is None or self.ui_manager is None or self.ui_manager.modal is not None:
+            return
+
+        def wait_for_roll():
+            self.ui_manager.close_modal()
+            player.pending_token = token
+            player.pending_token_node_id = node.id
+            self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
+
+        def skip():
+            self.ui_manager.close_modal()
+            self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
+
+        buttons = [("Roll 4–6", wait_for_roll), ("Leave token", skip)]
+        if player.money >= 100:
+            def pay_and_open():
+                self.ui_manager.close_modal()
+                player.money -= 100
+                if self.db_connector is not None:
+                    self.db_connector.update_player_money(player.id, -100)
+                self._reveal_token(player, node, token)
+            buttons.insert(0, ("Open for £100", pay_and_open))
+        self.ui_manager.open_modal(UIPopup(
+            self.ev_manager, self._popup_rect(), self.assets,
+            f"{player.name} reached {node.name or 'an airport'}. Open the hidden token?",
+            buttons,
+        ))
+        if self.turn_manager is not None:
+            self.turn_manager.awaiting_token_resolution = True
+
+    def _show_token_result(self, player, node, token, message, resolve=False):
+        if self.ui_manager is None:
+            if resolve:
+                self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
+            return
+        def finish():
+            self.ui_manager.close_modal()
+            if resolve:
+                self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
+        self.ui_manager.open_modal(UIPopup(
+            self.ev_manager, self._popup_rect(), self.assets, message,
+            [("Continue", finish)], image=token.texture,
+        ))
+        if self.turn_manager is not None:
+            self.turn_manager.awaiting_token_resolution = True
+
+    def _reveal_token(self, player, node, token):
+        if token.is_claimed:
+            return
+        token.is_claimed = True
+        if self.db_connector is not None:
+            self.db_connector.claim_node_token(token.id)
+        category = token.category.lower()
+        message = f"{player.name} found {token.token_type}."
+        if "star" in token.token_type.lower():
+            player.has_star = True
+            player.add_item(token.token_type, token.texture_key)
+            message += " You found the Star of Africa! Bring it to Cairo or Tangier to win."
+        elif "horseshoe" in token.token_type.lower():
+            if any(other.has_star for other in self.players.values()):
+                player.has_horseshoe = True
+                player.add_item(token.token_type, token.texture_key)
+                message += " The horseshoe can protect the Star of Africa from a robber."
+            else:
+                message += " The horseshoe is discarded because the Star has not been found."
+        elif category in {"gem", "treasure", "money", "reward"}:
+            player.money += token.money_delta
+            message += f" You receive £{token.money_delta}."
+            player.add_item(token.token_type, token.texture_key)
+            if self.db_connector is not None:
+                self.db_connector.update_player_money(player.id, token.money_delta)
+        elif category in {"robber", "bandit", "hazard"}:
+            if player.has_star and player.has_horseshoe:
+                player.has_horseshoe = False
+                if player.items.get("Horseshoe", {}).get("quantity", 0):
+                    player.items["Horseshoe"]["quantity"] -= 1
+                    if self.db_connector is not None:
+                        self.db_connector.remove_player_item(player.id, "Horseshoe")
+                message += " Your horseshoe protects the Star from the robber."
+            else:
+                lost = player.money
+                player.money = 0
+                message += f" The robber takes £{lost}."
+                if self.db_connector is not None and lost:
+                    self.db_connector.update_player_money(player.id, -lost)
+            player.add_item(token.token_type, token.texture_key)
+        elif category == "empty" or token.token_type.lower() == "empty":
+            player.add_item(token.token_type, token.texture_key)
+            message += " The token is empty."
+        self._show_token_result(player, node, token, message, resolve=True)
 
     def _lookup_player(self, player_id):
         if player_id in self.players:
@@ -124,6 +298,7 @@ class GameScene(Scene):
                 projector=self.map_projector,
                 is_waypoint=bool(data.get("is_waypoint", False)),
                 is_capital=bool(data.get("is_capital", False)),
+                airport_ident=data.get("airport_ident"),
                 radius=38 if not data.get("is_waypoint") else 26,
                 color=(255, 200, 0) if data.get("is_capital") else (235, 235, 220),
                 font=self.assets.font("small"),
@@ -186,6 +361,8 @@ class GameScene(Scene):
             )
             self.routes[route_id] = route
 
+        self._separate_parallel_corridors()
+
         image_width, image_height = self.assets.image("map").get_size()
         outside = [
             node.id
@@ -199,6 +376,92 @@ class GameScene(Scene):
             f"[DEBUG] Map Loaded: {len(self.nodes)} DB nodes, "
             f"{len(self.map_nodes)} board nodes, {len(self.roads)} drawable roads, "
             f"{len(self.routes)} routes."
+        )
+
+    def _separate_parallel_corridors(self):
+        """Give alternate transport types between the same cities distinct lanes.
+
+        Waypoints on multi-hop routes are shifted as a connected corridor. Direct
+        routes get a quadratic curve, keeping their endpoints fixed.
+        """
+        corridors = defaultdict(lambda: defaultdict(list))
+        for route in self.routes.values():
+            city_ids = tuple(sorted((str(route.start_node.id), str(route.end_node.id))))
+            corridors[city_ids][route.road_type].append(route)
+
+        moved_waypoints = set()
+        parallel_count = 0
+        for city_ids, by_type in corridors.items():
+            road_types = sorted(by_type)
+            if len(road_types) < 2:
+                continue
+            parallel_count += 1
+            low_node = self.nodes[city_ids[0]]
+            high_node = self.nodes[city_ids[1]]
+            dx = high_node.pos_x - low_node.pos_x
+            dy = high_node.pos_y - low_node.pos_y
+            length = (dx * dx + dy * dy) ** 0.5
+            if length == 0:
+                print(f"[WARNING] Parallel corridor {city_ids} has coincident city coordinates.")
+                continue
+            normal_x, normal_y = -dy / length, dx / length
+            lane_offsets = {
+                road_type: (index - (len(road_types) - 1) / 2) * 80.0
+                for index, road_type in enumerate(road_types)
+            }
+
+            for road_type, routes in by_type.items():
+                lane_offset = lane_offsets[road_type]
+                seen_roads = set()
+                for route in routes:
+                    current = route.start_node
+                    path_nodes = [current]
+                    for road in route.segments:
+                        try:
+                            current = road.get_other_node(current)
+                        except ValueError:
+                            print(
+                                f"[WARNING] Route {route.id} is disconnected at road {road.id}; "
+                                "lane offset skipped for its remaining path."
+                            )
+                            break
+                        path_nodes.append(current)
+                        if road.id not in seen_roads:
+                            seen_roads.add(road.id)
+                            if len(path_nodes) == 2 and len(route.segments) == 1:
+                                orientation = 1 if str(road.node_a.id) == city_ids[0] else -1
+                                road.set_curve(orientation * lane_offset * 2)
+
+                    for node in path_nodes[1:-1]:
+                        if node.is_waypoint and node.id not in moved_waypoints:
+                            node.pos_x = round(node.pos_x + normal_x * lane_offset)
+                            node.pos_y = round(node.pos_y + normal_y * lane_offset)
+                            moved_waypoints.add(node.id)
+
+                print(
+                    f"[DEBUG] Road lane {low_node.name or city_ids[0]} "
+                    f"({city_ids[0]}) -> {high_node.name or city_ids[1]} "
+                    f"({city_ids[1]}) "
+                    f"({road_type}): offset {lane_offset:+.0f}px, "
+                    f"{len(seen_roads)} physical segment(s)."
+                )
+
+        # Rebuild every multi-hop edge after the route waypoints have moved.
+        direct_road_ids = {
+            segment.id
+            for by_type in corridors.values()
+            for routes in by_type.values()
+            for route in routes
+            if len(route.segments) == 1
+            for segment in route.segments
+        }
+        for road in self.roads:
+            if road.id not in direct_road_ids:
+                road.set_curve(0.0)
+
+        print(
+            f"[DEBUG] Parallel road diagnostics: {parallel_count} city corridors "
+            f"with alternate transport types; {len(moved_waypoints)} waypoints adjusted."
         )
 
     def _create_demo_player(self):
@@ -257,6 +520,7 @@ class GameScene(Scene):
             has_won=False,
             token_radius=8,
             ev_manager=self.ev_manager,
+            db_connector=db,
         )
         p1_sprite_loaded = False
         if hasattr(self.assets, "image"):
@@ -290,6 +554,7 @@ class GameScene(Scene):
             has_won=False,
             token_radius=8,
             ev_manager=self.ev_manager,
+            db_connector=db,
         )
         p2_sprite_loaded = False
         if hasattr(self.assets, "image"):
@@ -438,11 +703,13 @@ class GameScene(Scene):
                 "center": (1.7008826667, 16.9950613333),
             }
             self.map_projector = MapProjector.from_control_points(
-                map_texture.get_size(), map_control_points, scale_y=0.79
+                map_texture.get_size(), map_control_points, scale_y=0.79, scale_x=1.1
             )
             print(
                 f"[DEBUG] Georeferenced MapProjector initialized for texture "
-                f"{map_texture.get_size()} from 5 control points (vertical scale 0.9)."
+                f"{map_texture.get_size()} from 5 control points "
+                f"(horizontal scale {self.map_projector.scale_x:.2f}, "
+                f"vertical scale {self.map_projector.scale_y:.2f})."
             )
 
         db_connected = self.db_connector is not None and self.db_connector.connection is not None
@@ -451,8 +718,10 @@ class GameScene(Scene):
         if db_connected:
             self._load_map_from_db(self.db_connector)
             game_id = self.db_connector.insert_game()
+            self.game_id = game_id
             print(f"[DEBUG] New Game created in database with Game ID: {game_id}")
             self._create_two_players(self.db_connector, game_id)
+            self._seed_game_tokens(self.db_connector, game_id)
 
         if not self.nodes:
             print("[WARNING] No map nodes available from DB! Triggering fallback single-node setup...")
@@ -493,3 +762,32 @@ class GameScene(Scene):
         print("=" * 50 + "\n")
 
         super().enter()
+
+    def _seed_game_tokens(self, db, game_id):
+        city_nodes = [node for node in self.map_nodes if not node.is_waypoint]
+        city_ids = [int(node.id) for node in city_nodes if str(node.id).isdigit()]
+        if not city_ids:
+            return
+        count = db.seed_game_tokens(game_id, city_ids)
+        for row in db.get_game_node_tokens(game_id):
+            node = self.nodes.get(str(row["node_id"]))
+            if node is None:
+                continue
+            key = row.get("texture_key") or "token-empty"
+            images = getattr(self.assets, "images", {})
+            token = Token(
+                id=row["node_token_id"],
+                token_type=(
+                    "Star of Africa"
+                    if key == "merkki-bitcoin-lvl3"
+                    else row["name"]
+                ),
+                category=row["category"],
+                money_delta=int(row.get("money_delta") or 0),
+                texture=images.get(key) or images.get("token-empty"),
+                texture_key=key,
+                back_texture=images.get("token-backside"),
+                is_claimed=bool(row.get("is_claimed")),
+            )
+            node.tokens.append(token)
+        print(f"[DEBUG] Seeded and rendered {count} hidden tokens for game {game_id}.")

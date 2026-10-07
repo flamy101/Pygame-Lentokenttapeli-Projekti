@@ -196,7 +196,7 @@ class Map(UIElement):
         screen.blit(self._scaled_texture, self.map_surface.topleft)
 
         if current_size != self._scaled_content_size:
-            self._scaled_content = pygame.transform.scale(
+            self._scaled_content = pygame.transform.smoothscale(
                 self.content_surface, current_size
             )
             self._scaled_content_size = current_size

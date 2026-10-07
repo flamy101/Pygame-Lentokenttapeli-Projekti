@@ -46,8 +46,12 @@ class Player:
         self.token_radius = token_radius
         self.ev_manager = ev_manager
         self.db_connector = db_connector
-        self.items: dict[str, int] = {}
+        self.items: dict[str, dict[str, Any]] = {}
         self.sprite: pygame.Surface | None = None
+        self.has_star = False
+        self.has_horseshoe = False
+        self.pending_token = None
+        self.pending_token_node_id = None
 
         # Keep the precise position as floats; pygame.Rect stores only rounded
         # integer coordinates and is updated by assignment in _sync_rect().
@@ -93,19 +97,18 @@ class Player:
             pygame.draw.circle(screen, (255, 255, 255), center, draw_radius, 2)
 
     def _apply_node_tokens(self, node):
-        tokens = getattr(node, "tokens", None)
-        if tokens:
-            for token in tokens:
-                if getattr(token, "is_claimed", False):
-                    continue
-                self.money += token.money_delta
-                token.is_claimed = True
-            return
+        """Token effects are applied only after the player accepts a reveal."""
+        return None
 
+    def add_item(self, name: str, icon_key: str | None = None):
+        item = self.items.setdefault(name, {"quantity": 0, "icon": icon_key})
+        item["quantity"] += 1
+        if icon_key:
+            item["icon"] = icon_key
         if self.db_connector is not None:
-            apply_node_tokens = getattr(self.db_connector, "apply_node_tokens", None)
-            if callable(apply_node_tokens):
-                apply_node_tokens(self, node)
+            add_player_item = getattr(self.db_connector, "add_player_item", None)
+            if callable(add_player_item):
+                add_player_item(self.id, name)
 
     def advance_one_hop(self) -> bool:
         """Move over one route road, charge its cost, and publish arrivals.
@@ -121,6 +124,23 @@ class Player:
             return False
 
         road = route.segments[self.route_progress]
+        travel_fare = getattr(route, "travel_fare", None)
+        if travel_fare is None:
+            step_cost = road.cost
+        elif self.route_progress == 0:
+            step_cost = travel_fare
+            if (
+                getattr(route, "road_type", None) == "sea"
+                and self.money == 0
+                and len(route.segments) <= 2
+            ):
+                step_cost = 0
+        else:
+            step_cost = 0
+
+        if self.money < step_cost:
+            return False
+
         try:
             next_node = road.get_other_node(self.current_node)
         except ValueError as error:
@@ -132,15 +152,21 @@ class Player:
         was_eliminated = self.is_eliminated
         had_won = self.has_won
 
-        self.money -= road.cost
+        self.money -= step_cost
+        if step_cost and self.db_connector is not None:
+            update_money = getattr(self.db_connector, "update_player_money", None)
+            if callable(update_money):
+                update_money(self.id, -int(step_cost))
         self.current_node = next_node
         self.route_progress += 1
         self.x, self.y = self._node_position(next_node)
         self._sync_rect()
+        if self.db_connector is not None:
+            update_position = getattr(self.db_connector, "update_player_position", None)
+            if callable(update_position):
+                update_position(self.id, int(next_node.id))
 
         # The connector owns token lookup and applies any effects to this player.
-        self._apply_node_tokens(next_node)
-
         arrived = next_node == route.end_node
         if arrived:
             self.current_route = None

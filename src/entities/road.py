@@ -9,8 +9,8 @@ class Road:
         "highway": {"color": (220, 220, 50), "width": 5, "dash": None},
         "main": {"color": (200, 200, 200), "width": 3, "dash": None},
         "land": {"color": (245, 218, 105), "width": 42, "dash": None},
-        "sea": {"color": (70, 190, 235), "width": 42, "dash": (48, 24)},
-        "flight": {"color": (255, 120, 70), "width": 38, "dash": (18, 14)},
+        "sea": {"color": (70, 190, 235), "width": 42, "dash": None},
+        "flight": {"color": (255, 120, 70), "width": 38, "dash": None},
         "dirt": {
             "color": (139, 90, 43),
             "width": 2,
@@ -47,6 +47,7 @@ class Road:
         self._bake_geometry(offset, curve)
 
     def _bake_geometry(self, offset: float, curve: float):
+        self.curve = curve
         ax, ay = self.node_a.pos_x, self.node_a.pos_y
         bx, by = self.node_b.pos_x, self.node_b.pos_y
 
@@ -90,6 +91,10 @@ class Road:
             )
         else:
             self.points = raw_points
+
+    def set_curve(self, curve: float):
+        """Rebuild this road with a signed map-space curve offset."""
+        self._bake_geometry(0.0, curve)
 
     @staticmethod
     def _generate_dashed_segments(
@@ -150,6 +155,21 @@ class Road:
                     pygame.draw.lines(
                         surface, self.color, False, self.points, self.width
                     )
+
+        # Roads are stored as short edges between waypoint nodes. pygame's line
+        # caps are square, so the dark outline can show through at angled joins.
+        # Round both layers at the endpoints so adjacent edges form one stroke.
+        if self.width > 1:
+            endpoints = (
+                (self.segments[0][0], self.segments[-1][1])
+                if self.dash_pattern and self.segments
+                else (self.points[0], self.points[-1])
+                if self.points
+                else ()
+            )
+            for point in endpoints:
+                pygame.draw.circle(surface, (25, 28, 35), point, (self.width + 10) // 2)
+                pygame.draw.circle(surface, self.color, point, self.width // 2)
 
     def get_other_node(self, current_node: Any) -> Any:
         if current_node == self.node_a:

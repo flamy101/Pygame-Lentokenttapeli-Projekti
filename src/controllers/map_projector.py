@@ -10,15 +10,19 @@ class MapProjector:
         image_size: tuple[int, int],
         offset_y: float = 0.0,
         scale_y: float = 1.0,
+        scale_x: float = 1.0,
     ):
         """
         :param map_bounds: (min_lon, min_lat, max_lon, max_lat)
         :param image_size: (width, height) of the map texture in pixels
+        :param scale_x: horizontal map scale around the image center
+        :param scale_y: vertical map scale around the image center
         """
         self.min_lon, self.min_lat, self.max_lon, self.max_lat = map_bounds
         self.width, self.height = image_size
         self.offset_y = offset_y
         self.scale_y = scale_y
+        self.scale_x = scale_x
 
         self.lon_range = self.max_lon - self.min_lon
         self.lat_range = self.max_lat - self.min_lat
@@ -29,14 +33,21 @@ class MapProjector:
         self._georeference_triangles = None
 
     @classmethod
-    def from_control_points(cls, image_size, control_points, scale_y=1.0):
+    def from_control_points(
+        cls, image_size, control_points, scale_y=1.0, scale_x=1.0
+    ):
         """Create a projector from NW, NE, SE, SW, and center tie points.
 
         Control point values are ``(latitude, longitude)`` decimal-degree pairs.
-        Four triangles around the center preserve every supplied reference.
+        Four triangles around the center provide a piecewise affine projection.
+        Scale factors are applied around the texture center after projection.
         """
-        projector = cls((0.0, 0.0, 1.0, 1.0), image_size)
-        projector.scale_y = scale_y
+        projector = cls(
+            (0.0, 0.0, 1.0, 1.0),
+            image_size,
+            scale_x=scale_x,
+            scale_y=scale_y,
+        )
         width, height = image_size
         pixel_points = {
             "nw": (0.0, 0.0),
@@ -85,6 +96,7 @@ class MapProjector:
         _, weights, pixels = min(candidates, key=lambda candidate: candidate[0])
         x = sum(weight * pixel[0] for weight, pixel in zip(weights, pixels))
         y = sum(weight * pixel[1] for weight, pixel in zip(weights, pixels))
+        x = self.width / 2 + (x - self.width / 2) * self.scale_x
         y = self.height / 2 + (y - self.height / 2) * self.scale_y
         return round(x), round(y)
 
@@ -100,7 +112,8 @@ class MapProjector:
         norm_y = (self.max_lat - lat) / self.lat_range
 
         
-        px_x = round(norm_x * (self.width - 1))
+        projected_x = norm_x * (self.width - 1)
+        px_x = round(self.width / 2 + (projected_x - self.width / 2) * self.scale_x)
         px_y = round(
             self.height / 2
             + (norm_y * (self.height - 1) - self.height / 2) * self.scale_y

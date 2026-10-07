@@ -25,7 +25,14 @@ class Route:
         self.road_type = road_type
         self.segments = segments
         self.hop_count = len(segments)
-        self.total_cost = sum(road.cost for road in segments)
+        self.travel_fare = {"land": 0, "sea": 100, "flight": 300}.get(
+            road_type
+        )
+        self.total_cost = (
+            self.travel_fare
+            if self.travel_fare is not None
+            else sum(road.cost for road in segments)
+        )
 
         self.segment_lengths: List[float] = []
         self.total_distance = 0.0

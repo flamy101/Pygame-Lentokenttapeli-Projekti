@@ -1,6 +1,6 @@
 from yoyo import step
 
-__depends__ = {}
+__depends__ = {"0003_create_roads"}
 
 # Distribution weights aim for a classic 30-token board:
 # 1x Star (Bitcoin)

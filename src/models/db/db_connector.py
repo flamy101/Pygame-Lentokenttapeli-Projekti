@@ -1,6 +1,7 @@
 import mariadb
 from dotenv import load_dotenv
 from os import getenv
+import random
 
 import events
 from models.db import db_operations
@@ -151,8 +152,81 @@ class DBConnector:
 
     def get_node_tokens(self, node_id: int) -> list[dict]:
         return self._fetch_all(
-            "SELECT * FROM node_tokens WHERE node_id = %s AND is_claimed = 0",
+            """
+            SELECT nt.id AS node_token_id, nt.node_id, nt.game_id, nt.is_claimed,
+                   tt.id AS token_type_id, tt.name, tt.category, tt.money_delta,
+                   tt.texture_key
+            FROM node_tokens nt
+            JOIN token_types tt ON tt.id = nt.token_type_id
+            WHERE nt.node_id = %s AND nt.is_claimed = 0
+            """,
             (node_id,),
+        )
+
+    def seed_game_tokens(self, game_id: int, city_node_ids: list[int]) -> int:
+        """Shuffle an official token deck onto this game's available cities."""
+        token_types = self.get_all_token_types()
+        if not token_types or not city_node_ids:
+            return 0
+
+        star = next(
+            (token for token in token_types if token["name"] == "Star of Africa"),
+            None,
+        )
+        # Migration 0005 in older databases used a display name containing the
+        # Finnish product label. The stable texture key identifies the same
+        # Star token without requiring a destructive database repair.
+        if star is None:
+            star = next(
+                (
+                    token
+                    for token in token_types
+                    if token.get("texture_key") == "merkki-bitcoin-lvl3"
+                ),
+                None,
+            )
+        other_tokens = [
+            token
+            for token in token_types
+            if token is not star
+            for _ in range(int(token["weight"]))
+        ]
+        if star is None:
+            raise RuntimeError("The token deck has no Star of Africa token.")
+
+        deck = [star]
+        deck.extend(random.sample(other_tokens, min(len(city_node_ids) - 1, len(other_tokens))))
+        random.shuffle(deck)
+        assignments = [
+            (game_id, int(node_id), int(token["id"]))
+            for node_id, token in zip(city_node_ids, deck)
+        ]
+
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute("DELETE FROM node_tokens WHERE game_id = %s", (game_id,))
+            cursor.executemany(
+                "INSERT INTO node_tokens (game_id, node_id, token_type_id, is_claimed) "
+                "VALUES (%s, %s, %s, 0)",
+                assignments,
+            )
+            self.connection.commit()
+        finally:
+            cursor.close()
+        return len(assignments)
+
+    def get_game_node_tokens(self, game_id: int) -> list[dict]:
+        return self._fetch_all(
+            """
+            SELECT nt.id AS node_token_id, nt.node_id, nt.game_id, nt.is_claimed,
+                   tt.id AS token_type_id, tt.name, tt.category, tt.money_delta,
+                   tt.texture_key
+            FROM node_tokens nt
+            JOIN token_types tt ON tt.id = nt.token_type_id
+            WHERE nt.game_id = %s
+            ORDER BY nt.node_id
+            """,
+            (game_id,),
         )
 
     def claim_node_token(self, node_token_id: int) -> None:

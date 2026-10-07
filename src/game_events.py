@@ -76,3 +76,20 @@ class PlayerEliminatedEvent(Event):
 class PlayerWonEvent(Event):
     name: str = field(default="Player won event", init=False)
     player_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class DiceRolledEvent(Event):
+    """A player rolled a movement value."""
+    name: str = field(default="Dice rolled event", init=False)
+    player_id: str = field(init=True, repr=True)
+    current_node_id: str = field(init=True, repr=True)
+    roll_value: int = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class ReachableRoutesFoundEvent(Event):
+    """Routes that can be completed within the player's roll."""
+    name: str = field(default="Reachable routes found event", init=False)
+    player_id: str = field(init=True, repr=True)
+    routes: list = field(init=True, repr=True)

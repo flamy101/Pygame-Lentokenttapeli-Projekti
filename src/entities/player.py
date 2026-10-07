@@ -46,6 +46,7 @@ class Player:
         self.token_radius = token_radius
         self.ev_manager = ev_manager
         self.db_connector = db_connector
+        self.items: dict[str, int] = {}
 
         # Keep the precise position as floats; pygame.Rect stores only rounded
         # integer coordinates and is updated by assignment in _sync_rect().

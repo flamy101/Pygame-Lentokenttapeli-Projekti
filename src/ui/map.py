@@ -1,5 +1,4 @@
 import pygame
-
 import events
 import game_events
 from ui import UIElement
@@ -7,10 +6,23 @@ from ui import UIElement
 
 class Map(UIElement):
 
-    def __init__(self, rect, z_index, ev_manager, color, container, texture):
+    def __init__(
+        self,
+        rect,
+        z_index,
+        ev_manager,
+        color,
+        container,
+        texture,
+        nodes=None,
+        roads=None,
+        routes=None,
+    ):
         """
         :param container: pygame.Rect — the visible viewport the map must always fully cover.
+        :param nodes/roads/routes: Lists of preloaded map components.
         """
+
         super().__init__(rect, z_index)
         self.ev_manager = ev_manager
         ev_manager.register_listener(self)
@@ -33,6 +45,27 @@ class Map(UIElement):
         self.min_zoom_w = container.w
         self.min_zoom_h = container.h
 
+        self.nodes = nodes or []
+        self.roads = roads or []
+        self.routes = routes or []
+
+        self.content_surface = pygame.Surface(texture.get_size(), pygame.SRCALPHA)
+        self._scaled_content = None
+        self._scaled_content_size = None
+
+        self._build_content()
+
+    def _build_content(self):
+        """Draws all map elements onto the offscreen content surface."""
+        self.content_surface.fill((0, 0, 0, 0))
+
+        for road in self.roads:
+            road.draw(self.content_surface)
+        for route in self.routes:
+            route.draw(self.content_surface)
+        for node in self.nodes:
+            node.draw(self.content_surface)
+
     def notify(self, event):
         match event:
             case game_events.MapMoveEvent():
@@ -46,18 +79,32 @@ class Map(UIElement):
 
             case game_events.MapScaleEvent():
                 factor = event.zoom
-                self._zoom(factor, [0,0])
+                self._zoom(factor, [0, 0])
 
+            case (
+                events.MouseInputEvent()
+            ):
+                if event.mouse_btn == 1:
+                    self._handle_click(event.pos)
 
+    def _handle_click(self, screen_pos):
+        """Converts screen click to map content coordinates and hit-tests nodes."""
+        scale_x = self.w / self.content_surface.get_width()
+        scale_y = self.h / self.content_surface.get_height()
+
+        map_x = (screen_pos[0] - self.x) / scale_x
+        map_y = (screen_pos[1] - self.y) / scale_y
+
+        for node in reversed(self.nodes):
+            if node.hit_test((map_x, map_y)):
+                print(f"Clicked node: {node.name} (ID: {node.id})")
+                break
 
     def _zoom(self, factor, anchor):
-        """
-        Scale the map by factor, zooming is centered under the cursor.
-        """
+        """Scale the map by factor, zooming is centered under the cursor."""
         new_w = max(self.w * factor, self.min_zoom_w)
         new_h = max(self.h * factor, self.min_zoom_h)
 
-        # Keep the point under the cursor in the same place after resizing.
         rel_x = (anchor[0] - self.x) / self.w
         rel_y = (anchor[1] - self.y) / self.h
 
@@ -69,9 +116,7 @@ class Map(UIElement):
         self._apply()
 
     def _apply(self):
-        """
-        Write the float state into map_surface, then clamp to container
-        """
+        """Write the float state into map_surface, then clamp to container"""
         self.map_surface.x = round(self.x)
         self.map_surface.y = round(self.y)
         self.map_surface.w = round(self.w)
@@ -101,17 +146,27 @@ class Map(UIElement):
             if rect.bottom < container.bottom:
                 rect.bottom = container.bottom
 
+    def refresh_cache(self):
+        self._build_content()
+        self._scaled_content_size = None
+
     def draw(self, screen):
         previous_clip = screen.get_clip()
         screen.set_clip(self.container)
 
         current_size = self.map_surface.size
-        if current_size != self._scaled_size:
-            self._scaled_texture = pygame.transform.scale(
-                self.texture, current_size
-            )
-            self._scaled_size = current_size
 
+        if current_size != self._scaled_size:
+            self._scaled_texture = pygame.transform.scale(self.texture, current_size)
+            self._scaled_size = current_size
         screen.blit(self._scaled_texture, self.map_surface.topleft)
+
+        if current_size != self._scaled_content_size:
+            self._scaled_content = pygame.transform.scale(
+                self.content_surface, current_size
+            )
+            self._scaled_content_size = current_size
+
+        screen.blit(self._scaled_content, self.map_surface.topleft)
 
         screen.set_clip(previous_clip)

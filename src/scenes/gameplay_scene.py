@@ -1,3 +1,5 @@
+from entities.map_node import Node
+from controllers.map_projector import MapProjector
 import pygame
 import random
 import game_events
@@ -21,7 +23,9 @@ class GameScene(Scene):
         self.exit_button = None
         self.game_map = None
         self.map_surface = None
+        self.map_projector = None
         self.map_container = None
+        self.nodes = []
 
     def roll_dice(self):
         self.ev_manager.post(
@@ -79,6 +83,25 @@ class GameScene(Scene):
         if self.map_container is None:
             self.map_container = pygame.Rect(50, 50, 800, 800)
 
+        if self.map_projector is None:
+
+            self.map_projector = MapProjector(map_bounds=(-18.00, 35.00, 38.00, 52.00), image_size=(800,800))
+
+            node = Node(
+                "1147",
+                36.691002,
+                3.215410,
+                self.map_projector,
+                is_waypoint=False,
+                is_capital=False,
+                radius=50,
+                color=(255, 10, 10),
+                font=self.assets.font("default"),
+            )
+
+            self.nodes.append(node)
+
+
         if self.game_map is None:
             self.game_map = Map(
                 rect=self.map_surface,
@@ -87,6 +110,7 @@ class GameScene(Scene):
                 color=(20, 100, 0),
                 container=self.map_container,
                 texture=self.assets.image("map"),
+                nodes=self.nodes
             )
             self.elements.append(self.game_map)
 

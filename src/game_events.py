@@ -52,6 +52,13 @@ class CurrentPlayerChangedEvent(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class TurnEndedEvent(Event):
+    """Signals the next player after the current turn ends."""
+    name: str = field(default="Turn ended event", init=False)
+    next_player_id: int = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
 class PlayerMovedEvent(Event):
     name: str = field(default="Player moved event", init=False)
     player_id: str = field(init=True, repr=True)

@@ -90,8 +90,21 @@ class DiceRolledEvent(Event):
     """A player rolled a movement value."""
     name: str = field(default="Dice rolled event", init=False)
     player_id: str = field(init=True, repr=True)
-    current_node_id: str = field(init=True, repr=True)
-    roll_value: int = field(init=True, repr=True)
+    value: int = field(init=True, repr=True)
+    current_node_id: str | None = field(default=None, repr=True)
+
+    @property
+    def roll_value(self) -> int:
+        """Compatibility alias used by route lookup."""
+        return self.value
+
+
+@dataclass(frozen=True, slots=True)
+class RollRequestedEvent(Event):
+    """A player's UI requested a dice roll."""
+    name: str = field(default="Roll requested event", init=False)
+    player_id: str = field(init=True, repr=True)
+    current_node_id: str | None = field(default=None, repr=True)
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,6 +1,7 @@
 import pygame
 import random
 import game_events
+from controllers.dice_roller import DiceRoller
 from controllers.map_controller import MapController
 from scenes import Scene
 from ui.elements import Button, Text
@@ -10,6 +11,9 @@ from ui.map import Map
 class GameScene(Scene):
     def __init__(self, ev_manager, ui_manager, assets):
         super().__init__(ev_manager, ui_manager, assets)
+        self.ev_manager.register_listener(self)
+        self.dice_roller = DiceRoller(ev_manager, rng=random.Random())
+        self.temporary_player_id = "p1"
         self.map_controller = None
         self.dice_result = 0
         self.dice_button = None
@@ -20,9 +24,17 @@ class GameScene(Scene):
         self.map_container = None
 
     def roll_dice(self):
-        self.dice_result = random.randint(1, 12)
-        self.dice_text.text = str(self.dice_result)
-        print(self.dice_result)
+        self.ev_manager.post(
+            game_events.RollRequestedEvent(self.temporary_player_id)
+        )
+
+    def notify(self, event):
+        if isinstance(event, game_events.DiceRolledEvent):
+            if event.player_id != self.temporary_player_id:
+                return
+            self.dice_result = event.value
+            if self.dice_text is not None:
+                self.dice_text.text = str(event.value)
 
     def enter(self):
         if self.exit_button is None:

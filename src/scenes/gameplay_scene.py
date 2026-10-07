@@ -116,7 +116,7 @@ class GameScene(Scene):
         badge_rect = pygame.Rect(
             column_left + 12, margin + 8, max(1, column_width - 24), 48
         )
-        wallet_width = max(1, min(220, column_width - 24))
+        wallet_width = max(1, min(100, column_width - 24))
         wallet_rect = pygame.Rect(
             column_left + (column_width - wallet_width) // 2,
             screen_height - 130,

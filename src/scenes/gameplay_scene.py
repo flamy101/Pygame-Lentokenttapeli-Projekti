@@ -6,6 +6,8 @@ import random
 import game_events
 from controllers.dice_roller import DiceRoller
 from controllers.map_controller import MapController
+from controllers.route_finder import RouteFinder
+from controllers.turn_manager import TurnManager
 from scenes import Scene
 from ui.elements import Button, CurrentPlayerBadge, Text
 from ui.map import Map
@@ -13,12 +15,13 @@ from ui.player_hud import PlayerHUD
 
 
 class GameScene(Scene):
-    def __init__(self, ev_manager, ui_manager, assets, players=None):
+    def __init__(self, ev_manager, ui_manager, assets, players=None, route_finder=None):
         super().__init__(ev_manager, ui_manager, assets)
         self.ev_manager.register_listener(self)
         self.dice_roller = DiceRoller(ev_manager, rng=random.Random())
-        self.temporary_player_id = "p1"
         self.players = players if players is not None else {}
+        self.route_finder = route_finder
+        self.turn_manager = None
         self.player_hud = None
         self.current_player_badge = None
         self.map_controller = None
@@ -33,14 +36,21 @@ class GameScene(Scene):
         self.nodes = []
 
     def roll_dice(self):
+        player = (
+            self.turn_manager.current_player
+            if self.turn_manager is not None
+            else min(self.players.values(), key=lambda item: item.turn_order)
+        )
         self.ev_manager.post(
-            game_events.RollRequestedEvent(self.temporary_player_id)
+            game_events.RollRequestedEvent(
+                player.id,
+                current_node_id=player.current_node.id,
+            )
         )
 
     def notify(self, event):
         if isinstance(event, game_events.TurnEndedEvent):
             player = self._lookup_player(event.next_player_id)
-            self.temporary_player_id = player.id
             if self.player_hud is not None:
                 self.player_hud.bind(player)
             if self.current_player_badge is not None:
@@ -48,7 +58,12 @@ class GameScene(Scene):
             return
 
         if isinstance(event, game_events.DiceRolledEvent):
-            if event.player_id != self.temporary_player_id:
+            current_player = (
+                self.turn_manager.current_player
+                if self.turn_manager is not None
+                else min(self.players.values(), key=lambda item: item.turn_order)
+            )
+            if event.player_id != current_player.id:
                 return
             self.dice_result = event.value
             if self.dice_text is not None:
@@ -67,7 +82,7 @@ class GameScene(Scene):
             return
         node = self.nodes[0]
         player = Player(
-            id=self.temporary_player_id,
+            id="p1",
             game_id="demo",
             name="Player 1",
             color=(200, 35, 45),
@@ -88,7 +103,6 @@ class GameScene(Scene):
             return
 
         player = min(self.players.values(), key=lambda item: item.turn_order)
-        self.temporary_player_id = player.id
 
         screen = pygame.display.get_surface()
         screen_width, screen_height = screen.get_size() if screen else (1200, 900)
@@ -126,6 +140,31 @@ class GameScene(Scene):
             z_index=5,
         )
         self.elements.extend((self.player_hud, self.current_player_badge))
+
+    def _create_turn_manager(self):
+        if self.turn_manager is not None:
+            return
+        if self.route_finder is None:
+            nodes = {node.id: node for node in self.nodes}
+            self.route_finder = RouteFinder(
+                self.ev_manager,
+                nodes=nodes,
+                roads={},
+                routes={},
+            )
+        self.turn_manager = TurnManager(
+            ev_manager=self.ev_manager,
+            players=self.players,
+            route_finder=self.route_finder,
+            game_id=getattr(
+                min(self.players.values(), key=lambda item: item.turn_order),
+                "game_id",
+                "demo",
+            ),
+            ui_manager=self.ui_manager,
+            assets=self.assets,
+            map_view=self.game_map,
+        )
 
     def enter(self):
         screen = pygame.display.get_surface()
@@ -211,5 +250,6 @@ class GameScene(Scene):
 
         self._create_demo_player()
         self._create_player_hud()
+        self._create_turn_manager()
 
         super().enter()

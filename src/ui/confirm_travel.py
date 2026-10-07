@@ -23,8 +23,8 @@ def confirm_travel(route, player, ui_manager, assets, ev_manager):
     player_id = player.id
 
     def accept():
-        ev_manager.post(game_events.RouteConfirmedEvent(route.id, player_id))
         ui_manager.close_modal()
+        ev_manager.post(game_events.RouteConfirmedEvent(route.id, player_id))
 
     popup = UIPopup(
         ev_manager,

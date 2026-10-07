@@ -8,3 +8,6 @@ dependencies = [
     "pygame-ce>=2.5.8",
     "pyrefly>=0.60.0",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

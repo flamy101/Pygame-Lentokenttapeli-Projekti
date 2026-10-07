@@ -25,7 +25,6 @@ class Map(UIElement):
 
         super().__init__(rect, z_index)
         self.ev_manager = ev_manager
-        self.ui_manager = ui_manager
         ev_manager.register_listener(self)
 
         self.color = color
@@ -68,9 +67,6 @@ class Map(UIElement):
             node.draw(self.content_surface)
 
     def notify(self, event):
-        if self.ui_manager is not None and self.ui_manager.modal is not None:
-            return
-
         match event:
             case game_events.MapMoveEvent():
                 self.x += event.dx
@@ -85,9 +81,7 @@ class Map(UIElement):
                 factor = event.zoom
                 self._zoom(factor, [0, 0])
 
-            case (
-                events.MouseInputEvent()
-            ):
+            case events.MouseInputEvent():
                 if event.mouse_btn == 1:
                     self._handle_click(event.pos)
 
@@ -149,10 +143,6 @@ class Map(UIElement):
                 rect.top = container.top
             if rect.bottom < container.bottom:
                 rect.bottom = container.bottom
-
-    def refresh_cache(self):
-        self._build_content()
-        self._scaled_content_size = None
 
     def draw(self, screen):
         previous_clip = screen.get_clip()

@@ -2,6 +2,7 @@ import pygame
 
 import game_events
 from entities.player import Player
+from entities.token import Token
 
 
 class Node:
@@ -110,6 +111,24 @@ def test_arrival_at_city_clears_route_and_posts_arrival_event():
         game_events.PlayerMovedEvent("p1", "waypoint", "destination"),
         game_events.PlayerArrivedEvent("p1", "destination"),
     ]
+
+
+def test_arriving_at_node_applies_and_claims_its_token():
+    player, _ = make_player()
+    destination = player.current_route.segments[0].node_b
+    token = Token(
+        id="token-1",
+        token_type="bonus",
+        category="money",
+        money_delta=5,
+        texture=pygame.Surface((8, 8), pygame.SRCALPHA),
+    )
+    destination.tokens = [token]
+
+    assert player.advance_one_hop()
+
+    assert player.money == 13
+    assert token.is_claimed
 
 
 def test_fractional_player_position_is_preserved_across_rect_updates():

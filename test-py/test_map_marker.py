@@ -1,6 +1,7 @@
 import pygame
 
 from entities.map_node import Node
+from entities.token import Token
 
 
 def make_node(*, is_waypoint=False, name="Helsinki"):
@@ -45,5 +46,28 @@ def test_highlight_draws():
         node = make_node()
         node.set_highlighted(True)
         node.draw(pygame.Surface((800, 600)))
+    finally:
+        pygame.quit()
+
+
+def test_node_draws_attached_token_at_its_position():
+    pygame.init()
+    try:
+        texture = pygame.Surface((12, 12), pygame.SRCALPHA)
+        texture.fill((240, 30, 30))
+        token = Token("token-1", "bonus", "money", 5, texture)
+        node = Node(
+            node_id="node-1",
+            name=None,
+            lat=0,
+            lon=0,
+            projector=lambda lat, lon: (100, 100),
+            tokens=[token],
+        )
+        surface = pygame.Surface((200, 200), pygame.SRCALPHA)
+
+        node.draw(surface)
+
+        assert surface.get_at((100, 100))[:3] == (240, 30, 30)
     finally:
         pygame.quit()

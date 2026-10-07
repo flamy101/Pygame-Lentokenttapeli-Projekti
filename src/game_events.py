@@ -38,8 +38,16 @@ class MapScaleEvent(Event):
 
 @dataclass(frozen=True, slots=True)
 class RouteSelectedEvent(Event):
-    """A player confirmed a route during their turn."""
-    name: str = field(default="Route selected event", init=False)
+    """A route's travel confirmation popup was opened for a player."""
+    name: str = field(default="Route confirmation shown event", init=False)
+    route_id: str = field(init=True, repr=True)
+    player_id: str = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class RouteConfirmedEvent(Event):
+    """A player accepted travel on the route confirmation popup."""
+    name: str = field(default="Route confirmed event", init=False)
     route_id: str = field(init=True, repr=True)
     player_id: str = field(init=True, repr=True)
 

@@ -7,14 +7,20 @@ class MapController:
 
     SPEED = 300
 
-    def __init__(self, ev_manager):
+    def __init__(self, ev_manager, ui_manager=None):
 
         self.ev_manager = ev_manager
+        self.ui_manager = ui_manager
         ev_manager.register_listener(self)
+
+    def _modal_is_open(self):
+        return self.ui_manager is not None and self.ui_manager.modal is not None
 
     def notify(self, event):
         match event:
             case events.TickEvent():
+                if self._modal_is_open():
+                    return
                 if not pygame.display.get_init():
                     return
                 keys = pygame.key.get_pressed()
@@ -25,6 +31,8 @@ class MapController:
                     self.ev_manager.post(game_events.MapMoveEvent(vel_dx, vel_dy))
 
             case events.KeyInputEvent():
+                if self._modal_is_open():
+                    return
                 key = event.unicodechar
                 if key == "r" or "f":
                     match key:

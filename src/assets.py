@@ -46,6 +46,9 @@ class Assets:
         self.images["menu-bkg-img"] = pygame.image.load(
             os.path.join(self.ASSET_DIR, "menu_background.png")
         )
+        self.images["wallet"] = pygame.image.load(
+            os.path.join(self.ASSET_DIR, "wallet.png")
+        ).convert_alpha()
 
         self.load_music("menu-ost", "music_OST.mp3")
 

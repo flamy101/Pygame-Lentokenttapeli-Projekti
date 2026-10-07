@@ -1,21 +1,36 @@
 """Clickable route marker used to preview and select a route."""
 
 import math
+from types import SimpleNamespace
 
 import pygame
 
 import game_events
 from ui import UIElement
+from ui.confirm_travel import confirm_travel
 
 
 class RouteArrow(UIElement):
     """Draw an arrow for a route and expose its nodes while hovered."""
 
-    def __init__(self, route, rect, z_index, ev_manager, player_id):
+    def __init__(
+        self,
+        route,
+        rect,
+        z_index,
+        ev_manager,
+        player_id,
+        ui_manager=None,
+        assets=None,
+        player=None,
+    ):
         super().__init__(rect, z_index)
         self.route = route
         self.ev_manager = ev_manager
         self.player_id = player_id
+        self.ui_manager = ui_manager
+        self.assets = assets
+        self.player = player
         self.current_player_id = None
         self._highlighted_nodes = {}
         ev_manager.register_listener(self)
@@ -76,8 +91,21 @@ class RouteArrow(UIElement):
     def on_click(self):
         if self.current_player_id != self.player_id:
             return
-        self.ev_manager.post(
-            game_events.RouteSelectedEvent(self.route.id, self.player_id)
+        if self.ui_manager is None or self.assets is None:
+            # Keep event-only construction usable: a scene/controller can listen
+            # for this event and open the popup with its own UI dependencies.
+            self.ev_manager.post(
+                game_events.RouteSelectedEvent(self.route.id, self.player_id)
+            )
+            return
+
+        player = self.player or SimpleNamespace(id=self.player_id)
+        confirm_travel(
+            self.route,
+            player,
+            self.ui_manager,
+            self.assets,
+            self.ev_manager,
         )
 
     def draw(self, screen):

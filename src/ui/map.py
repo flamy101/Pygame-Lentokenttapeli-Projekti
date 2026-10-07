@@ -17,6 +17,7 @@ class Map(UIElement):
         nodes=None,
         roads=None,
         routes=None,
+        ui_manager=None,
     ):
         """
         :param container: pygame.Rect — the visible viewport the map must always fully cover.
@@ -25,6 +26,7 @@ class Map(UIElement):
 
         super().__init__(rect, z_index)
         self.ev_manager = ev_manager
+        self.ui_manager = ui_manager
         ev_manager.register_listener(self)
 
         self.color = color
@@ -67,6 +69,9 @@ class Map(UIElement):
             node.draw(self.content_surface)
 
     def notify(self, event):
+        if self.ui_manager is not None and self.ui_manager.modal is not None:
+            return
+
         match event:
             case game_events.MapMoveEvent():
                 self.x += event.dx
@@ -115,6 +120,7 @@ class Map(UIElement):
 
     def _apply(self):
         """Write the float state into map_surface, then clamp to container"""
+        target_x, target_y = self.x, self.y
         self.map_surface.x = round(self.x)
         self.map_surface.y = round(self.y)
         self.map_surface.w = round(self.w)
@@ -122,8 +128,18 @@ class Map(UIElement):
 
         self._clamp_to_container()
 
-        self.x = self.map_surface.x
-        self.y = self.map_surface.y
+        # Keep fractional movement when unclamped. If bounds moved the Rect,
+        # synchronize the float position to that constrained location.
+        self.x = (
+            target_x
+            if self.map_surface.x == round(target_x)
+            else float(self.map_surface.x)
+        )
+        self.y = (
+            target_y
+            if self.map_surface.y == round(target_y)
+            else float(self.map_surface.y)
+        )
 
     def _clamp_to_container(self):
         rect, container = self.map_surface, self.container

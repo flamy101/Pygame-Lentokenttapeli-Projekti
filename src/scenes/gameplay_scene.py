@@ -9,6 +9,7 @@ from controllers.turn_manager import TurnManager
 from entities.map_node import Node
 from entities.player import Player
 from entities.road import Road
+from entities.route import Route
 import game_events
 from scenes import Scene
 from ui.elements import Button, CurrentPlayerBadge, Text
@@ -94,6 +95,17 @@ class GameScene(Scene):
         print("[DEBUG] DB Map Loading: Fetching nodes and roads from database...")
         raw_nodes = db.get_all_nodes()
         raw_roads = db.get_all_roads()
+        raw_road_types = (
+            db.get_all_road_types() if hasattr(db, "get_all_road_types") else []
+        )
+        raw_routes = db.get_all_routes() if hasattr(db, "get_all_routes") else []
+        cost_by_road_type = {1: 0.0, 2: 100.0, 3: 300.0}
+        cost_by_road_type.update(
+            {
+                int(row["id"]): float(row["cost_per_step"])
+                for row in raw_road_types
+            }
+        )
 
         road_node_ids = {
             str(node_id)
@@ -112,7 +124,7 @@ class GameScene(Scene):
                 projector=self.map_projector,
                 is_waypoint=bool(data.get("is_waypoint", False)),
                 is_capital=bool(data.get("is_capital", False)),
-                radius=24 if not data.get("is_waypoint") else 13,
+                radius=38 if not data.get("is_waypoint") else 26,
                 color=(255, 200, 0) if data.get("is_capital") else (235, 235, 220),
                 font=self.assets.font("small"),
             )
@@ -124,6 +136,7 @@ class GameScene(Scene):
             )
 
         self.roads = []
+        roads_by_id = {}
         for r in raw_roads:
             node_a = self.nodes.get(str(r["node_a_id"]))
             node_b = self.nodes.get(str(r["node_b_id"]))
@@ -132,20 +145,46 @@ class GameScene(Scene):
                 road_type = {1: "land", 2: "sea", 3: "flight"}.get(
                     road_type_id, "land"
                 )
-                self.roads.append(
-                    Road(
-                        road_id=str(r["id"]),
-                        node_a=node_a,
-                        node_b=node_b,
-                        road_type=road_type,
-                        cost=float(r.get("cost", 0)),
-                    )
+                road = Road(
+                    road_id=str(r["id"]),
+                    node_a=node_a,
+                    node_b=node_b,
+                    road_type=road_type,
+                    cost=float(r.get("cost") or cost_by_road_type.get(road_type_id, 0)),
                 )
+                self.roads.append(road)
+                roads_by_id[road.id] = road
 
 
         self.map_nodes = [
             node for node_id, node in self.nodes.items() if node_id in road_node_ids
         ]
+
+        self.routes = {}
+        for row in raw_routes:
+            start_node = self.nodes.get(str(row["start_node_id"]))
+            end_node = self.nodes.get(str(row["end_node_id"]))
+            if start_node is None or end_node is None:
+                continue
+
+            route_id = str(row["id"])
+            segment_rows = db.get_route_segments(row["id"])
+            segments = [
+                roads_by_id[str(segment["road_id"])]
+                for segment in segment_rows
+                if str(segment["road_id"]) in roads_by_id
+            ]
+            road_type_id = int(row.get("road_type_id", 1))
+            route = Route(
+                route_id=route_id,
+                start_node=start_node,
+                end_node=end_node,
+                road_type={1: "land", 2: "sea", 3: "flight"}.get(
+                    road_type_id, "land"
+                ),
+                segments=segments,
+            )
+            self.routes[route_id] = route
 
         image_width, image_height = self.assets.image("map").get_size()
         outside = [
@@ -158,7 +197,8 @@ class GameScene(Scene):
 
         print(
             f"[DEBUG] Map Loaded: {len(self.nodes)} DB nodes, "
-            f"{len(self.map_nodes)} board nodes, {len(self.roads)} drawable roads."
+            f"{len(self.map_nodes)} board nodes, {len(self.roads)} drawable roads, "
+            f"{len(self.routes)} routes."
         )
 
     def _create_demo_player(self):
@@ -390,14 +430,19 @@ class GameScene(Scene):
 
         if self.map_projector is None:
             map_texture = self.assets.image("map")
-            self.map_projector = MapProjector(
-                map_bounds=(-28.6410763889, -35.5, 60.0, 62.3222216667),
-                image_size=map_texture.get_size(),
+            map_control_points = {
+                "nw": (32.0919611667, -28.6471293333),
+                "ne": (31.2895921667, 61.8606971667),
+                "se": (-32.8112481667, 62.4811053333),
+                "sw": (-26.1668358333, -25.1878980000),
+                "center": (1.7008826667, 16.9950613333),
+            }
+            self.map_projector = MapProjector.from_control_points(
+                map_texture.get_size(), map_control_points, scale_y=0.79
             )
             print(
-                f"[DEBUG] MapProjector initialized for texture {map_texture.get_size()} "
-                "with bounds (min_lon, min_lat, max_lon, max_lat)="
-                "(-28.6411, -35.5, 60.0, 62.3222)."
+                f"[DEBUG] Georeferenced MapProjector initialized for texture "
+                f"{map_texture.get_size()} from 5 control points (vertical scale 0.9)."
             )
 
         db_connected = self.db_connector is not None and self.db_connector.connection is not None

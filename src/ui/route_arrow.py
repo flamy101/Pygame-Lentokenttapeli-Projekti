@@ -23,15 +23,21 @@ class RouteArrow(UIElement):
         ui_manager=None,
         assets=None,
         player=None,
+        from_node_id=None,
+        to_node_id=None,
+        map_view=None,
     ):
         super().__init__(rect, z_index)
         self.route = route
         self.ev_manager = ev_manager
         self.player_id = player_id
+        self.from_node_id = from_node_id
+        self.to_node_id = to_node_id
         self.ui_manager = ui_manager
         self.assets = assets
         self.player = player
-        self.current_player_id = None
+        self.map_view = map_view
+        self.current_player_id = player_id
         self._highlighted_nodes = {}
         ev_manager.register_listener(self)
 
@@ -77,6 +83,8 @@ class RouteArrow(UIElement):
                 setter(True)
             else:
                 node.highlighted = True
+        if self.map_view is not None:
+            self.map_view.refresh_content()
 
     def on_hover_end(self):
         self.highlighted = False
@@ -87,6 +95,16 @@ class RouteArrow(UIElement):
             else:
                 node.highlighted = previous
         self._highlighted_nodes.clear()
+        if self.map_view is not None:
+            self.map_view.refresh_content()
+
+    def kill(self):
+        if self.map_view is not None:
+            self.map_view.remove_element(self)
+        else:
+            if self.ui_manager is not None and self in self.ui_manager.elements:
+                self.ui_manager.remove(self)
+            self.ev_manager.unregister_listener(self)
 
     def on_click(self):
         if self.current_player_id != self.player_id:
@@ -110,10 +128,13 @@ class RouteArrow(UIElement):
 
     def draw(self, screen):
         """Draw an arrow rotated toward the first segment of the route."""
-        points = self.route.route_points
+        points = [
+            (node.pos_x, node.pos_y)
+            for node in self._route_nodes()
+        ]
         if len(points) >= 2:
-            dx = points[1][0] - points[0][0]
-            dy = points[1][1] - points[0][1]
+            dx = points[-1][0] - points[-2][0]
+            dy = points[-1][1] - points[-2][1]
             angle = math.degrees(math.atan2(-dy, dx))
         else:
             angle = 0

@@ -8,9 +8,9 @@ class Road:
     STYLES: Dict[str, Dict[str, Any]] = {
         "highway": {"color": (220, 220, 50), "width": 5, "dash": None},
         "main": {"color": (200, 200, 200), "width": 3, "dash": None},
-        "land": {"color": (245, 218, 105), "width": 18, "dash": None},
-        "sea": {"color": (70, 190, 235), "width": 20, "dash": (36, 18)},
-        "flight": {"color": (255, 120, 70), "width": 24, "dash": (12, 10)},
+        "land": {"color": (245, 218, 105), "width": 42, "dash": None},
+        "sea": {"color": (70, 190, 235), "width": 42, "dash": (48, 24)},
+        "flight": {"color": (255, 120, 70), "width": 38, "dash": (18, 14)},
         "dirt": {
             "color": (139, 90, 43),
             "width": 2,
@@ -137,9 +137,13 @@ class Road:
     def draw(self, surface: pygame.Surface):
         if self.dash_pattern:
             for p1, p2 in self.segments:
+                pygame.draw.line(surface, (25, 28, 35), p1, p2, self.width + 10)
                 pygame.draw.line(surface, self.color, p1, p2, self.width)
         else:
             if len(self.points) > 1:
+                pygame.draw.lines(
+                    surface, (25, 28, 35), False, self.points, self.width + 10
+                )
                 if self.width <= 1:
                     pygame.draw.aalines(surface, self.color, False, self.points)
                 else:

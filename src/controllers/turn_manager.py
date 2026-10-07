@@ -51,7 +51,7 @@ class TurnManager:
                 print(f"[DEBUG] Ignored ReachableRoutesFoundEvent for Player {event.player_id} (Active player is {self.current_player.id if self.current_player else 'None'})")
 
         elif isinstance(event, game_events.RouteConfirmedEvent):
-            print(f"[DEBUG] RouteConfirmedEvent received for route target: {getattr(getattr(event, 'route', None), 'end_node', None)}")
+            print(f"[DEBUG] RouteConfirmedEvent received for route {event.route_id}.")
             self._confirm_route(event)
 
     def _clear_arrows(self):
@@ -70,51 +70,77 @@ class TurnManager:
             self._advance_turn()
             return
 
-        if self.map_view is None or self.current_player is None:
-            print("[WARNING] Map view or active player missing; route arrows cannot be displayed.")
+        if self.current_player is None:
+            print("[WARNING] Active player missing; route arrows cannot be displayed.")
             return
 
         from_node = self.current_player.current_node
         from_node_id = from_node.id if from_node is not None else None
 
-        for route in self.available_routes:
+        for index, route in enumerate(self.available_routes):
             end_node = getattr(route, "end_node", None)
             to_node_id = end_node.id if end_node is not None else None
 
-            if hasattr(self.map_view, "add_element"):
-                arrow = RouteArrow(
-                    rect=pygame.Rect(0, 0, 40, 40),
-                    z_index=10,
-                    ev_manager=self.ev_manager,
-                    player_id=self.current_player.id,
-                    from_node_id=from_node_id,
-                    to_node_id=to_node_id,
-                    route=route,
-                )
+            arrow = RouteArrow(
+                route=route,
+                rect=pygame.Rect(0, 0, 48, 48),
+                z_index=10,
+                ev_manager=self.ev_manager,
+                player_id=self.current_player.id,
+                from_node_id=from_node_id,
+                to_node_id=to_node_id,
+                ui_manager=self.ui_manager,
+                assets=self.assets,
+                player=self.current_player,
+                map_view=self.map_view,
+            )
+            arrow.suggestion_index = index
+            if self.map_view is not None:
                 self.map_view.add_element(arrow)
-                self.route_arrows.append(arrow)
+            elif self.ui_manager is not None:
+                end_node = route.end_node
+                arrow.rect.center = (end_node.pos_x, end_node.pos_y)
+                self.ui_manager.add(arrow)
+            self.route_arrows.append(arrow)
 
         print(f"[DEBUG] Added {len(self.route_arrows)} route arrows to the map.")
 
     def _confirm_route(self, event):
-        route = getattr(event, "route", None)
-        if route is None or self.current_player is None:
+        if self.current_player is None or event.player_id != self.current_player.id:
+            return
+        route = next(
+            (candidate for candidate in self.available_routes
+             if str(candidate.id) == str(event.route_id)),
+            None,
+        )
+        if route is None:
+            print(f"[WARNING] Confirmed route {event.route_id} is not available.")
             return
 
         from_node = self.current_player.current_node
         from_node_id = from_node.id if from_node is not None else None
-        end_node = getattr(route, "end_node", None)
+        path = []
+        node = from_node
+        try:
+            for road in route.segments:
+                node = road.get_other_node(node)
+                path.append((road, node))
+        except ValueError:
+            print(f"[WARNING] Route {route.id} is disconnected from node {node.id}.")
+            return
 
-        if end_node is not None:
-            print(f"[DEBUG] Player {self.current_player.id} moving from node {from_node_id} to node {end_node.id}")
-            self.current_player.current_node = end_node
-            self.ev_manager.post(
-                game_events.PlayerMovedEvent(
-                    player_id=self.current_player.id,
-                    from_node_id=from_node_id,
-                    to_node_id=end_node.id,
-                )
-            )
+        if node != route.end_node:
+            print(f"[WARNING] Route {route.id} does not end at its declared destination.")
+            return
+
+        player = self.current_player
+        player.current_route = route
+        player.route_progress = 0
+        for _ in path:
+            if not player.advance_one_hop():
+                break
+
+        print(f"[DEBUG] Player {player.id} moved from node {from_node_id} to node {node.id}.")
 
         self._clear_arrows()
         self._advance_turn()

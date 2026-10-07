@@ -52,6 +52,7 @@ class Map(UIElement):
         self.roads = roads or []
         self.routes = routes or []
         self.players = players or []
+        self.overlays = []
 
         self.content_surface = pygame.Surface(texture.get_size(), pygame.SRCALPHA)
         self._scaled_content = None
@@ -69,6 +70,27 @@ class Map(UIElement):
             route.draw(self.content_surface)
         for node in self.nodes:
             node.draw(self.content_surface)
+
+    def refresh_content(self):
+        """Redraw static map layers after node highlights change."""
+        self._build_content()
+        self._scaled_content_size = None
+
+    def add_element(self, element):
+        if element in self.overlays:
+            return element
+        self.overlays.append(element)
+        element.map_view = self
+        if self.ui_manager is not None:
+            self.ui_manager.add(element)
+        return element
+
+    def remove_element(self, element):
+        if element in self.overlays:
+            self.overlays.remove(element)
+        if self.ui_manager is not None and element in self.ui_manager.elements:
+            self.ui_manager.remove(element)
+        self.ev_manager.unregister_listener(element)
 
     def notify(self, event):
         if self.ui_manager is not None and self.ui_manager.modal is not None:
@@ -200,6 +222,21 @@ class Map(UIElement):
                     self.x + map_x * scale_x + offset,
                     self.y + map_y * scale_y,
                 )
-                player.draw(screen, position=screen_pos, radius=10)
+                player.draw(screen, position=screen_pos, radius=18)
+
+        overlay_groups = {}
+        for overlay in self.overlays:
+            node = overlay.route.end_node
+            overlay_groups.setdefault(str(node.id), []).append(overlay)
+
+        for group in overlay_groups.values():
+            for index, overlay in enumerate(group):
+                node = overlay.route.end_node
+                offset = (index - (len(group) - 1) / 2) * 50
+                overlay.rect.center = (
+                    round(self.x + node.pos_x * scale_x + offset),
+                    round(self.y + node.pos_y * scale_y),
+                )
+                overlay.draw(screen)
 
         screen.set_clip(previous_clip)

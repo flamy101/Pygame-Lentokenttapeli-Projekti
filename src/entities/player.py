@@ -74,6 +74,15 @@ class Player:
         pygame.draw.circle(screen, self.color, self.rect.center, self.token_radius)
 
     def _apply_node_tokens(self, node):
+        tokens = getattr(node, "tokens", None)
+        if tokens:
+            for token in tokens:
+                if getattr(token, "is_claimed", False):
+                    continue
+                self.money += token.money_delta
+                token.is_claimed = True
+            return
+
         if self.db_connector is not None:
             apply_node_tokens = getattr(self.db_connector, "apply_node_tokens", None)
             if callable(apply_node_tokens):

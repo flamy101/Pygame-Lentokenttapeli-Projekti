@@ -20,6 +20,7 @@ class Node:
         radius: int = 4,
         color: tuple = (255, 255, 255),
         font: pygame.font.Font = None,  # ty: ignore[invalid-parameter-default]
+        tokens: list | None = None,
     ):
 
         self.id = node_id
@@ -30,6 +31,7 @@ class Node:
         self.is_capital = is_capital
         self.is_waypoint = is_waypoint
         self.region = region
+        self.tokens = list(tokens or [])
 
         self.radius = radius
         self.color = color
@@ -79,6 +81,10 @@ class Node:
         if self.text_surface:
             surface.blit(self._shadow_surf, self.shadow_rect)
             surface.blit(self.text_surface, self.text_rect)
+
+        for token in self.tokens:
+            if not token.is_claimed:
+                token.draw(surface, (self.pos_x, self.pos_y))
 
     def hit_test(self, mouse_pos: tuple[int, int]) -> bool:
         """

@@ -37,6 +37,12 @@ class MapScaleEvent(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class GameStartedEvent(Event):
+    game_id: int
+    name: str = field(default="GameStartedEvent", init=False)
+
+
+@dataclass(frozen=True, slots=True)
 class RouteSelectedEvent(Event):
     """A route's travel confirmation popup was opened for a player."""
     name: str = field(default="Route confirmation shown event", init=False)

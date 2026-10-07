@@ -80,7 +80,7 @@ class Node:
 
         if self.text_surface:
             surface.blit(self._shadow_surf, self.shadow_rect)
-            surface.blit(self.text_surface, self.text_rect)
+            surface.blit(self.text_surface, self.text_rect)  # ty: ignore[invalid-argument-type]
 
         for token in self.tokens:
             if not token.is_claimed:

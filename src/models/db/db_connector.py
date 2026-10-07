@@ -3,17 +3,16 @@ from dotenv import load_dotenv
 from os import getenv
 
 import events
-
 from models.db import db_operations
 
 load_dotenv()
+
 
 class DBConnector:
     def __init__(self, ev_manager):
         self.ev_manager = ev_manager
         self.ev_manager.register_listener(self)
-        self.connection : mariadb.Connection = None  # ty: ignore[invalid-assignment]
-
+        self.connection: mariadb.Connection = None  # type: ignore[assignment]
 
     def notify(self, event):
         match event:
@@ -21,38 +20,31 @@ class DBConnector:
                 print("Checking for connection...")
                 self.is_connected()
 
-
-
-
     def is_connected(self):
         if getenv("DEBUG") == "TRUE":
-            return
+            self.ev_manager.post(events.DBConnect(True))
+            return True
 
         try:
-            self.connection: mariadb.Connection = mariadb.connect(
-                host = getenv("DB_HOST"),
-                port = int(getenv("DB_PORT")),  # ty: ignore[invalid-argument-type]
-                user = getenv("DB_USER"),
-                password = getenv("DB_PASSWORD"),
-                database = getenv("DB_NAME"),
+            self.connection = mariadb.connect(
+                host=getenv("DB_HOST"),
+                port=int(getenv("DB_PORT", 3306)),
+                user=getenv("DB_USER"),
+                password=getenv("DB_PASSWORD"),
+                database=getenv("DB_NAME"),
             )
-
-            event = events.DBConnect(True)
+            self.ev_manager.post(events.DBConnect(True))
+            return True
 
         except mariadb.Error as error:
-
             print(f"MariaDB error: {error}")
-            event = events.DBConnect(False)
-            event = events.DatabaseConnectionFailed(True)
+            self.ev_manager.post(events.DBConnect(False))
+            self.ev_manager.post(events.DatabaseConnectionFailed(True))
+            return False
 
-        self.ev_manager.post(event)
-
-
-
-    def create_new_game(self):
-        game_id = db_operations.create_game(self.connection, "masha")
+    def create_new_game(self, player_name: str = "Player 1"):
+        game_id = db_operations.create_game(self.connection, name=player_name)
         return game_id
-
 
     # HELPERS
     def _fetch_all(self, query: str, params: tuple = ()) -> list[dict]:
@@ -67,7 +59,8 @@ class DBConnector:
         cursor = self.connection.cursor(dictionary=True)
         try:
             cursor.execute(query, params)
-            return cursor.fetchone()
+            res = cursor.fetchone()
+            return res if res is not None else {}
         finally:
             cursor.close()
 
@@ -80,7 +73,6 @@ class DBConnector:
         finally:
             cursor.close()
 
-
     # NODES
     def get_all_nodes(self) -> list[dict]:
         return self._fetch_all("SELECT * FROM nodes")
@@ -91,7 +83,6 @@ class DBConnector:
     def get_nodes_by_region(self, region: str) -> list[dict]:
         return self._fetch_all("SELECT * FROM nodes WHERE region = %s", (region,))
 
-
     # ROAD TYPES
     def get_all_road_types(self) -> list[dict]:
         return self._fetch_all("SELECT * FROM road_types")
@@ -100,7 +91,6 @@ class DBConnector:
         return self._fetch_one(
             "SELECT * FROM road_types WHERE id = %s", (road_type_id,)
         )
-
 
     # ROADS
     def get_all_roads(self) -> list[dict]:
@@ -115,7 +105,6 @@ class DBConnector:
     def get_road(self, road_id: int) -> dict:
         return self._fetch_one("SELECT * FROM roads WHERE id = %s", (road_id,))
 
-
     # ROUTES
     def get_all_routes(self) -> list[dict]:
         return self._fetch_all("SELECT * FROM routes")
@@ -129,9 +118,9 @@ class DBConnector:
                     rs.id, rs.route_id, rs.road_id, rs.seq,
                     r.node_a_id, r.node_b_id, r.road_type_id, r.cost
                 FROM route_segments rs
-                         JOIN roads r ON rs.road_id = r.id
+                     JOIN roads r ON rs.road_id = r.id
                 WHERE rs.route_id = %s
-                ORDER BY rs.seq ASC \
+                ORDER BY rs.seq ASC
                 """
         return self._fetch_all(query, (route_id,))
 
@@ -139,7 +128,6 @@ class DBConnector:
         return self._fetch_all(
             "SELECT * FROM routes WHERE start_node_id = %s", (node_id,)
         )
-
 
     # TOKEN TYPES / NODE TOKENS
     def get_all_token_types(self) -> list[dict]:
@@ -161,7 +149,6 @@ class DBConnector:
             "UPDATE node_tokens SET is_claimed = 1 WHERE id = %s", (node_token_id,)
         )
 
-
     # GAMES
     def insert_game(self) -> int:
         return self._execute(
@@ -179,7 +166,6 @@ class DBConnector:
     def set_game_finished(self, game_id: int) -> None:
         self._execute("UPDATE games SET is_finished = 1 WHERE id = %s", (game_id,))
 
-
     # PLAYERS
     def insert_player(
         self,
@@ -192,7 +178,7 @@ class DBConnector:
     ) -> int:
         query = """
                 INSERT INTO players (game_id, name, color, money, current_node_id, turn_order)
-                VALUES (%s, %s, %s, %s, %s, %s) \
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
         return self._execute(
             query, (game_id, name, color, money, current_node_id, turn_order)
@@ -233,7 +219,6 @@ class DBConnector:
 
     def set_player_won(self, player_id: int) -> None:
         self._execute("UPDATE players SET has_won = 1 WHERE id = %s", (player_id,))
-
 
     # PLAYER ITEMS
     def get_player_items(self, player_id: int) -> list[dict]:

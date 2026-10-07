@@ -1,7 +1,5 @@
 import os.path
-
 import pygame
-
 import events as ev
 
 
@@ -9,9 +7,8 @@ class Assets:
     """
     Central store for loaded pygame resources (fonts, images, sounds).
 
-    Populated once, in response to InitializeEvent, after pygame.font.init()
-    and the display have been set up. Scenes and UI elements read from this
-    rather than creating their own resources.
+    Populated once, in response to PygameReadyEvent, after pygame.font.init()
+    and the display have been set up.
     """
 
     ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
@@ -49,34 +46,57 @@ class Assets:
         self.images["wallet"] = pygame.image.load(
             os.path.join(self.ASSET_DIR, "wallet.png")
         ).convert_alpha()
-        inventory_icons = {
-            "warning": "merkki-varoitus-lv1.png",
-            "horseshoe": "merkki-special-horseshoe.png",
-            "bandit": "merkki-special-bandit.png",
-            "bitcoin": "merkki-bitcoin-lvl3.png",
-            "200_iq": "merkki-200-iq-lv2.png",
+
+        # Board entities & map sprites
+        general_textures = {
+            "token-backside": "token-backside.png",
+            "token-deck": "token-deck.png",
+            "node": "node.png",
+            "player-blue": "player-blue.png",
+            "player-red": "player-red.png",
+            "route-arrow": "route-arrow.png",
         }
-        for name, filename in inventory_icons.items():
-            self.images[name] = pygame.image.load(
-                os.path.join(self.ASSET_DIR, filename)
-            ).convert_alpha()
+        for key, filename in general_textures.items():
+            path = os.path.join(self.ASSET_DIR, filename)
+            if os.path.isfile(path):
+                self.images[key] = pygame.image.load(path).convert_alpha()
+
+        token_textures = {
+            "merkki-varoitus-lv1": "merkki-varoitus-lv1.png",
+            "merkki-200-iq-lv2": "merkki-200-iq-lv2.png",
+            "merkki-bitcoin-lvl3": "merkki-bitcoin-lvl3.png",
+            "merkki-special-bandit": "merkki-special-bandit.png",
+            "merkki-special-horseshoe": "merkki-special-horseshoe.png",
+        }
+        for key, filename in token_textures.items():
+            path = os.path.join(self.ASSET_DIR, filename)
+            if os.path.isfile(path):
+                self.images[key] = pygame.image.load(path).convert_alpha()
+
+        aliases = {
+            "warning": "merkki-varoitus-lv1",
+            "200_iq": "merkki-200-iq-lv2",
+            "bitcoin": "merkki-bitcoin-lvl3",
+            "bandit": "merkki-special-bandit",
+            "horseshoe": "merkki-special-horseshoe",
+        }
+        for alias, target_key in aliases.items():
+            if target_key in self.images:
+                self.images[alias] = self.images[target_key]
 
         self.load_music("menu-ost", "music_OST.mp3")
 
         self.is_loaded = True
 
     def font(self, name: str) -> pygame.font.Font:
-        """
-        Look up a loaded font by name, with a clear error if it's missing
-        or requested too early.
-        """
         if not self.is_loaded:
             raise RuntimeError("Assets.font() called before InitializeEvent was handled")
         try:
             return self.fonts[name]
         except KeyError:
-            raise KeyError(f"No font registered under '{name}'. "
-                            f"Available: {list(self.fonts)}") from None
+            raise KeyError(
+                f"No font registered under '{name}'. Available: {list(self.fonts)}"
+            ) from None
 
     def image(self, name: str) -> pygame.Surface:
         if not self.is_loaded:
@@ -89,10 +109,6 @@ class Assets:
             ) from None
 
     def load_music(self, name: str, filename: str) -> str | None:
-        """
-        Register a music file under `name`. Music is streamed from disk by
-        pygame.mixer.music, so only the path is stored here.
-        """
         path = os.path.join(self.ASSET_DIR, filename)
         if not os.path.isfile(path):
             print(f"Warning: music file for '{name}' not found at {path}")
@@ -104,5 +120,3 @@ class Assets:
         if not self.is_loaded:
             raise RuntimeError("Assets.music_path() called before load()")
         return self.music_tracks.get(name)
-
-

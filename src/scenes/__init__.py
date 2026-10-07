@@ -29,6 +29,7 @@ class Scene:
     def draw(self, screen):
         for element in self.elements:
             element.draw(screen)
+        self.ui_manager.draw_modal(screen)
 
 
 class SceneManager:

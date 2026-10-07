@@ -7,12 +7,13 @@ from ui import UIElement
 
 class Map(UIElement):
 
-    def __init__(self, rect, z_index, ev_manager, color, container, texture):
+    def __init__(self, rect, z_index, ev_manager, color, container, texture, ui_manager=None):
         """
         :param container: pygame.Rect — the visible viewport the map must always fully cover.
         """
         super().__init__(rect, z_index)
         self.ev_manager = ev_manager
+        self.ui_manager = ui_manager
         ev_manager.register_listener(self)
 
         self.color = color
@@ -34,6 +35,9 @@ class Map(UIElement):
         self.min_zoom_h = container.h
 
     def notify(self, event):
+        if self.ui_manager is not None and self.ui_manager.modal is not None:
+            return
+
         match event:
             case game_events.MapMoveEvent():
                 self.x += event.dx

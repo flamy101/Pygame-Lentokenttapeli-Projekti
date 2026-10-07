@@ -74,7 +74,7 @@ def test_reachable_routes_respect_hop_budgets():
 
 def test_dice_roll_posts_reachable_routes_for_rolling_player():
     finder, manager, routes = make_finder()
-    dice_event = game_events.DiceRolledEvent("p1", "A", 2)
+    dice_event = game_events.DiceRolledEvent("p1", 2, "A")
 
     manager.post(dice_event)
 

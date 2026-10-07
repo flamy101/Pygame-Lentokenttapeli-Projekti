@@ -49,6 +49,17 @@ class Assets:
         self.images["wallet"] = pygame.image.load(
             os.path.join(self.ASSET_DIR, "wallet.png")
         ).convert_alpha()
+        inventory_icons = {
+            "warning": "merkki-varoitus-lv1.png",
+            "horseshoe": "merkki-special-horseshoe.png",
+            "bandit": "merkki-special-bandit.png",
+            "bitcoin": "merkki-bitcoin-lvl3.png",
+            "200_iq": "merkki-200-iq-lv2.png",
+        }
+        for name, filename in inventory_icons.items():
+            self.images[name] = pygame.image.load(
+                os.path.join(self.ASSET_DIR, filename)
+            ).convert_alpha()
 
         self.load_music("menu-ost", "music_OST.mp3")
 

@@ -14,7 +14,7 @@ class Assets:
     rather than creating their own resources.
     """
 
-    ASSET_DIR = os.path.join("src", "assets")
+    ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 
     def __init__(self, ev_manager):
         self.ev_manager = ev_manager

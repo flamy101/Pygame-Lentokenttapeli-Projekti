@@ -1,41 +1,91 @@
+from os import getenv
+from pathlib import Path
+
 import yoyo
 from dotenv import load_dotenv
-from os import getenv
 
 import events
 
-load_dotenv()
 
-class yoyoConnection:
-
+class YoyoConnection:
     def __init__(self, ev_manager):
         self.ev_manager = ev_manager
         self.ev_manager.register_listener(self)
 
+        self.backend = None
+        self.migrations = []
+
     def notify(self, event):
         match event:
             case events.DBConnect(True):
-                self.yoyo_connection()
+                self.connect()
 
+    def connect(self):
+        """
+        Create the Yoyo backend and load the migration files.
 
-    def yoyo_connection(self):
+        """
+
+        project_root = Path(__file__).resolve().parents[2]
+        migrations_dir = project_root / "migrations"
+        env_file = project_root / ".env"
+
+        load_dotenv(env_file)
+
+        print(f"Reading migrations from: {migrations_dir}")
 
         try:
+            if not migrations_dir.is_dir():
+                raise FileNotFoundError(
+                    f"Migration directory does not exist: {migrations_dir}"
+                )
+
             host = getenv("DB_HOST")
             port = getenv("DB_PORT")
             user = getenv("DB_USER")
             password = getenv("DB_PASSWORD")
             database = getenv("DB_NAME")
 
-            database_string = f"mysql://{user}:{password}@{host}:{port}/{database}"
+            missing = [
+                name
+                for name, value in {
+                    "DB_HOST": host,
+                    "DB_PORT": port,
+                    "DB_USER": user,
+                    "DB_PASSWORD": password,
+                    "DB_NAME": database,
+                }.items()
+                if value is None
+            ]
 
-            self.backend = yoyo.get_backend(database_string)
-            self.migrations = yoyo.read_migrations("migrations")           
+            if missing:
+                raise RuntimeError(
+                    f"Missing database environment variables: {', '.join(missing)}"
+                )
 
-            event = events.yoyoIsConnected(True)
-            
+            database_url = (
+                f"mysql://{user}:{password}@{host}:{port}/{database}"
+            )
+
+            self.backend = yoyo.get_backend(database_url)
+            self.migrations = yoyo.read_migrations(str(migrations_dir))
+
+            print(
+                f"Loaded {len(self.migrations)} migration(s): "
+                f"{[migration.id for migration in self.migrations]}"
+            )
+
+            self.ev_manager.post(
+                events.yoyoIsConnected(True)
+            )
+
         except Exception as error:
-            print (f"yoyo database operation failed: {error}")
-            event = events.yoyoIsConnected(False)
+            print(f"Yoyo database operation failed: {error}")
 
-        self.ev_manager.post(event)
+            self.backend = None
+            self.migrations = []
+
+            self.ev_manager.post(
+                events.yoyoIsConnected(False)
+            )
+

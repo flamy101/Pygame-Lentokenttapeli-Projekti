@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import events
 
 
@@ -11,6 +13,7 @@ class UIManager:
         self.elements: list[UIElement] = []
         self.hovered: UIElement | None = None
         self.focused: UIElement | None = None
+        self.modal: UIElement | None = None
 
     def add(self, element):
         """
@@ -36,10 +39,38 @@ class UIManager:
             self.focused = None
 
     def _topmost_at(self,pos):
+        if self.modal is not None:
+            for button in self.modal.child_buttons:
+                if button.rect.collidepoint(pos):
+                    return button
+            return None
+
         for element in self.elements:
             if element.rect.collidepoint(pos):
                 return element
         return None
+
+    def open_modal(self, popup: UIElement):
+        if self.hovered is not None:
+            self.hovered.on_hover_end()
+        self.hovered = None
+        self.focused = None
+        self.modal = popup
+
+    def close_modal(self):
+        if self.modal is None:
+            return
+        child_buttons = self.modal.child_buttons
+        if self.hovered in child_buttons:
+            self.hovered.on_hover_end()
+        if self.focused in child_buttons:
+            self.focused = None
+        self.hovered = None
+        self.modal = None
+
+    def draw_modal(self, screen):
+        if self.modal is not None:
+            self.modal.draw(screen)
 
     def notify(self, event):
         match event:

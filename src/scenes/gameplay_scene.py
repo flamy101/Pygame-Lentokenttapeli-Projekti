@@ -75,7 +75,7 @@ class GameScene(Scene):
             self.elements.append(self.dice_text)
 
         if self.map_controller is None:
-            self.map_controller = MapController(self.ev_manager)
+            self.map_controller = MapController(self.ev_manager, self.ui_manager)
 
         if self.map_surface is None:
             self.map_surface = pygame.Rect(50, 50, 800, 800)

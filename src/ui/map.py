@@ -25,6 +25,7 @@ class Map(UIElement):
 
         super().__init__(rect, z_index)
         self.ev_manager = ev_manager
+        self.ui_manager = ui_manager
         ev_manager.register_listener(self)
 
         self.color = color
@@ -67,6 +68,9 @@ class Map(UIElement):
             node.draw(self.content_surface)
 
     def notify(self, event):
+        if self.ui_manager is not None and self.ui_manager.modal is not None:
+            return
+
         match event:
             case game_events.MapMoveEvent():
                 self.x += event.dx

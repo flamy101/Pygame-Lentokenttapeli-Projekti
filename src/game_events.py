@@ -55,7 +55,15 @@ class CurrentPlayerChangedEvent(Event):
 class TurnEndedEvent(Event):
     """Signals the next player after the current turn ends."""
     name: str = field(default="Turn ended event", init=False)
-    next_player_id: int = field(init=True, repr=True)
+    previous_player_id: int | None = field(default=None, repr=True)
+    next_player_id: int | None = field(default=None, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class TurnInputReadyEvent(Event):
+    """The next player has taken the device and is ready to play."""
+    name: str = field(default="Turn input ready event", init=False)
+    player_id: int = field(init=True, repr=True)
 
 
 @dataclass(frozen=True, slots=True)

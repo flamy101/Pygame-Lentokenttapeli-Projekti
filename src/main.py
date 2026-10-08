@@ -34,7 +34,7 @@ def main():
     yoyo_opirations = YoyoOperations(ev_manager, yoyo_connection)
 
     scene_manager.register("menu", MenuScene(ev_manager, ui_manager, assets))
-    scene_manager.register("game", GameScene(ev_manager, ui_manager, assets))
+    scene_manager.register("game", GameScene(ev_manager, ui_manager, assets, db_connector=db_connector))
 
 
 

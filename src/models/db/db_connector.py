@@ -1,65 +1,65 @@
 import mariadb
 from dotenv import load_dotenv
 from os import getenv
+import random
 
 import events
-
 from models.db import db_operations
 
 load_dotenv()
+
 
 class DBConnector:
     def __init__(self, ev_manager):
         self.ev_manager = ev_manager
         self.ev_manager.register_listener(self)
-        self.connection : mariadb.Connection = None  # ty: ignore[invalid-assignment]
-
+        self.connection: mariadb.Connection = None  # type: ignore[assignment]
 
     def notify(self, event):
         match event:
             case events.PygameReadyEvent():
-                print("Checking for connection...")
+                print("[DEBUG] DBConnector: Received PygameReadyEvent. Testing database connection...")
                 self.is_connected()
-
-
-
 
     def is_connected(self):
         if getenv("DEBUG") == "TRUE":
-            return
+            print("[DEBUG] MariaDB: DEBUG mode enabled in environment variables. Mocking success connection.")
+            self.ev_manager.post(events.DBConnect(True))
+            return True
 
         try:
-            self.connection: mariadb.Connection = mariadb.connect(
-                host = getenv("DB_HOST"),
-                port = int(getenv("DB_PORT")),  # ty: ignore[invalid-argument-type]
-                user = getenv("DB_USER"),
-                password = getenv("DB_PASSWORD"),
-                database = getenv("DB_NAME"),
+            db_host = getenv("DB_HOST")
+            db_name = getenv("DB_NAME")
+            print(f"[DEBUG] Attempting MariaDB connection to {db_host} (database: {db_name})...")
+            self.connection = mariadb.connect(
+                host=db_host,
+                port=int(getenv("DB_PORT", 3306)),
+                user=getenv("DB_USER"),
+                password=getenv("DB_PASSWORD"),
+                database=db_name,
             )
-
-            event = events.DBConnect(True)
+            print("[DEBUG] MariaDB: Connected successfully!")
+            self.ev_manager.post(events.DBConnect(True))
+            return True
 
         except mariadb.Error as error:
+            print(f"[ERROR] MariaDB Connection failed: {error}")
+            self.ev_manager.post(events.DBConnect(False))
+            self.ev_manager.post(events.DatabaseConnectionFailed(True))
+            return False
 
-            print(f"MariaDB error: {error}")
-            event = events.DBConnect(False)
-            event = events.DatabaseConnectionFailed(True)
-
-        self.ev_manager.post(event)
-
-
-
-    def create_new_game(self):
-        game_id = db_operations.create_game(self.connection, "masha")
+    def create_new_game(self, player_name: str = "Player 1"):
+        game_id = db_operations.create_game(self.connection, name=player_name)
+        print(f"[DEBUG] DB Operations: Created new game (Game ID: {game_id})")
         return game_id
-
 
     # HELPERS
     def _fetch_all(self, query: str, params: tuple = ()) -> list[dict]:
         cursor = self.connection.cursor(dictionary=True)
         try:
             cursor.execute(query, params)
-            return cursor.fetchall() or []
+            results = cursor.fetchall() or []
+            return results
         finally:
             cursor.close()
 
@@ -67,7 +67,8 @@ class DBConnector:
         cursor = self.connection.cursor(dictionary=True)
         try:
             cursor.execute(query, params)
-            return cursor.fetchone()
+            res = cursor.fetchone()
+            return res if res is not None else {}
         finally:
             cursor.close()
 
@@ -80,17 +81,17 @@ class DBConnector:
         finally:
             cursor.close()
 
-
     # NODES
     def get_all_nodes(self) -> list[dict]:
-        return self._fetch_all("SELECT * FROM nodes")
+        res = self._fetch_all("SELECT * FROM nodes")
+        print(f"[DEBUG] DB Query `get_all_nodes`: Returned {len(res)} row(s).")
+        return res
 
     def get_node(self, node_id: int) -> dict:
         return self._fetch_one("SELECT * FROM nodes WHERE id = %s", (node_id,))
 
     def get_nodes_by_region(self, region: str) -> list[dict]:
         return self._fetch_all("SELECT * FROM nodes WHERE region = %s", (region,))
-
 
     # ROAD TYPES
     def get_all_road_types(self) -> list[dict]:
@@ -101,10 +102,11 @@ class DBConnector:
             "SELECT * FROM road_types WHERE id = %s", (road_type_id,)
         )
 
-
     # ROADS
     def get_all_roads(self) -> list[dict]:
-        return self._fetch_all("SELECT * FROM roads")
+        res = self._fetch_all("SELECT * FROM roads")
+        print(f"[DEBUG] DB Query `get_all_roads`: Returned {len(res)} row(s).")
+        return res
 
     def get_roads_from(self, node_id: int) -> list[dict]:
         return self._fetch_all(
@@ -114,7 +116,6 @@ class DBConnector:
 
     def get_road(self, road_id: int) -> dict:
         return self._fetch_one("SELECT * FROM roads WHERE id = %s", (road_id,))
-
 
     # ROUTES
     def get_all_routes(self) -> list[dict]:
@@ -129,9 +130,9 @@ class DBConnector:
                     rs.id, rs.route_id, rs.road_id, rs.seq,
                     r.node_a_id, r.node_b_id, r.road_type_id, r.cost
                 FROM route_segments rs
-                         JOIN roads r ON rs.road_id = r.id
+                     JOIN roads r ON rs.road_id = r.id
                 WHERE rs.route_id = %s
-                ORDER BY rs.seq ASC \
+                ORDER BY rs.seq ASC
                 """
         return self._fetch_all(query, (route_id,))
 
@@ -139,7 +140,6 @@ class DBConnector:
         return self._fetch_all(
             "SELECT * FROM routes WHERE start_node_id = %s", (node_id,)
         )
-
 
     # TOKEN TYPES / NODE TOKENS
     def get_all_token_types(self) -> list[dict]:
@@ -152,8 +152,81 @@ class DBConnector:
 
     def get_node_tokens(self, node_id: int) -> list[dict]:
         return self._fetch_all(
-            "SELECT * FROM node_tokens WHERE node_id = %s AND is_claimed = 0",
+            """
+            SELECT nt.id AS node_token_id, nt.node_id, nt.game_id, nt.is_claimed,
+                   tt.id AS token_type_id, tt.name, tt.category, tt.money_delta,
+                   tt.texture_key
+            FROM node_tokens nt
+            JOIN token_types tt ON tt.id = nt.token_type_id
+            WHERE nt.node_id = %s AND nt.is_claimed = 0
+            """,
             (node_id,),
+        )
+
+    def seed_game_tokens(self, game_id: int, city_node_ids: list[int]) -> int:
+        """Shuffle an official token deck onto this game's available cities."""
+        token_types = self.get_all_token_types()
+        if not token_types or not city_node_ids:
+            return 0
+
+        star = next(
+            (token for token in token_types if token["name"] == "Star of Africa"),
+            None,
+        )
+        # Migration 0005 in older databases used a display name containing the
+        # Finnish product label. The stable texture key identifies the same
+        # Star token without requiring a destructive database repair.
+        if star is None:
+            star = next(
+                (
+                    token
+                    for token in token_types
+                    if token.get("texture_key") == "merkki-bitcoin-lvl3"
+                ),
+                None,
+            )
+        other_tokens = [
+            token
+            for token in token_types
+            if token is not star
+            for _ in range(int(token["weight"]))
+        ]
+        if star is None:
+            raise RuntimeError("The token deck has no Star of Africa token.")
+
+        deck = [star]
+        deck.extend(random.sample(other_tokens, min(len(city_node_ids) - 1, len(other_tokens))))
+        random.shuffle(deck)
+        assignments = [
+            (game_id, int(node_id), int(token["id"]))
+            for node_id, token in zip(city_node_ids, deck)
+        ]
+
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute("DELETE FROM node_tokens WHERE game_id = %s", (game_id,))
+            cursor.executemany(
+                "INSERT INTO node_tokens (game_id, node_id, token_type_id, is_claimed) "
+                "VALUES (%s, %s, %s, 0)",
+                assignments,
+            )
+            self.connection.commit()
+        finally:
+            cursor.close()
+        return len(assignments)
+
+    def get_game_node_tokens(self, game_id: int) -> list[dict]:
+        return self._fetch_all(
+            """
+            SELECT nt.id AS node_token_id, nt.node_id, nt.game_id, nt.is_claimed,
+                   tt.id AS token_type_id, tt.name, tt.category, tt.money_delta,
+                   tt.texture_key
+            FROM node_tokens nt
+            JOIN token_types tt ON tt.id = nt.token_type_id
+            WHERE nt.game_id = %s
+            ORDER BY nt.node_id
+            """,
+            (game_id,),
         )
 
     def claim_node_token(self, node_token_id: int) -> None:
@@ -161,12 +234,13 @@ class DBConnector:
             "UPDATE node_tokens SET is_claimed = 1 WHERE id = %s", (node_token_id,)
         )
 
-
     # GAMES
     def insert_game(self) -> int:
-        return self._execute(
+        game_id = self._execute(
             "INSERT INTO games (current_turn, is_finished) VALUES (0, 0)"
         )
+        print(f"[DEBUG] DB Execution `insert_game`: Game record created with ID {game_id}.")
+        return game_id
 
     def get_game(self, game_id: int) -> dict:
         return self._fetch_one("SELECT * FROM games WHERE id = %s", (game_id,))
@@ -178,7 +252,6 @@ class DBConnector:
 
     def set_game_finished(self, game_id: int) -> None:
         self._execute("UPDATE games SET is_finished = 1 WHERE id = %s", (game_id,))
-
 
     # PLAYERS
     def insert_player(
@@ -192,11 +265,13 @@ class DBConnector:
     ) -> int:
         query = """
                 INSERT INTO players (game_id, name, color, money, current_node_id, turn_order)
-                VALUES (%s, %s, %s, %s, %s, %s) \
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
-        return self._execute(
+        player_id = self._execute(
             query, (game_id, name, color, money, current_node_id, turn_order)
         )
+        print(f"[DEBUG] DB Execution `insert_player`: Inserted '{name}' (ID: {player_id}) for Game {game_id}.")
+        return player_id
 
     def get_player(self, player_id: int) -> dict:
         return self._fetch_one("SELECT * FROM players WHERE id = %s", (player_id,))
@@ -233,7 +308,6 @@ class DBConnector:
 
     def set_player_won(self, player_id: int) -> None:
         self._execute("UPDATE players SET has_won = 1 WHERE id = %s", (player_id,))
-
 
     # PLAYER ITEMS
     def get_player_items(self, player_id: int) -> list[dict]:

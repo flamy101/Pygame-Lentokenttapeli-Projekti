@@ -19,7 +19,11 @@ def confirm_travel(route, player, ui_manager, assets, ev_manager):
         getattr(route.end_node, "name", None)
         or getattr(route.end_node, "id", route.end_node)
     )
-    message = f"Travel to {destination} for \u00a3{route.total_cost}?"
+    # Route.total_cost is the sum of the per-hop costs that Player deducts
+    # while following this same route.
+    amount = route.total_cost
+    amount_text = str(int(amount)) if float(amount).is_integer() else f"{amount:g}"
+    message = f"Travel to {destination} for \u00a3{amount_text}?"
     player_id = player.id
 
     def accept():

@@ -17,6 +17,7 @@ class Node:
         is_capital: bool = False,
         is_waypoint: bool = False,
         region: str = "default",
+        airport_ident: str | None = None,
         radius: int = 4,
         color: tuple = (255, 255, 255),
         font: pygame.font.Font = None,  # ty: ignore[invalid-parameter-default]
@@ -31,6 +32,7 @@ class Node:
         self.is_capital = is_capital
         self.is_waypoint = is_waypoint
         self.region = region
+        self.airport_ident = airport_ident
         self.tokens = list(tokens or [])
 
         self.radius = radius
@@ -60,7 +62,7 @@ class Node:
         if self.highlighted:
             highlight_radius = self.radius + 5
             pygame.draw.circle(
-                surface, (255, 215, 0), (self.pos_x, self.pos_y), highlight_radius, 2
+                surface, (255, 0, 255), (self.pos_x, self.pos_y), highlight_radius, 2
             )
 
         if self.is_waypoint:

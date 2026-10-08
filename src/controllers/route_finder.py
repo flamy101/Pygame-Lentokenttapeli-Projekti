@@ -19,7 +19,12 @@ class RouteFinder:
         self.nodes = nodes
         self.roads = roads
         self.routes = routes
+        self._suppressed_rolls = set()
         ev_manager.register_listener(self)
+
+    def suppress_next_roll(self, player_id):
+        """Consume a die roll used to attempt opening a token."""
+        self._suppressed_rolls.add(player_id)
 
     @staticmethod
     def _id(value):
@@ -98,6 +103,9 @@ class RouteFinder:
 
     def notify(self, event):
         if isinstance(event, game_events.DiceRolledEvent):
+            if event.player_id in self._suppressed_rolls:
+                self._suppressed_rolls.remove(event.player_id)
+                return
             reachable = self.find_reachable_routes(
                 event.current_node_id, event.roll_value
             )

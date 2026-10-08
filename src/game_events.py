@@ -135,3 +135,11 @@ class ReachableRoutesFoundEvent(Event):
     name: str = field(default="Reachable routes found event", init=False)
     player_id: str = field(init=True, repr=True)
     routes: list = field(init=True, repr=True)
+
+
+@dataclass(frozen=True, slots=True)
+class TokenResolvedEvent(Event):
+    """The active player's airport token decision/reveal is complete."""
+    name: str = field(default="Airport token resolved event", init=False)
+    player_id: str = field(init=True, repr=True)
+    node_id: str = field(init=True, repr=True)

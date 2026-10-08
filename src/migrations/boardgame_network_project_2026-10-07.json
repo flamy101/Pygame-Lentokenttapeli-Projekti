@@ -1,0 +1,2131 @@
+{
+  "version": "1.1",
+  "bounds": {
+    "minLat": -38,
+    "maxLat": 39.5,
+    "minLon": -23,
+    "maxLon": 57.3222216667
+  },
+  "roadTypes": [
+    {
+      "id": 1,
+      "name": "jeep",
+      "cost_per_step": 3,
+      "speed": 1,
+      "color": "#d97706",
+      "dashArray": ""
+    },
+    {
+      "id": 2,
+      "name": "ship",
+      "cost_per_step": 5,
+      "speed": 2,
+      "color": "#0284c7",
+      "dashArray": "6 4"
+    },
+    {
+      "id": 3,
+      "name": "plane",
+      "cost_per_step": 10,
+      "speed": 4,
+      "color": "#94a3b8",
+      "dashArray": "3 6"
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1178,
+      "name": "Houari Boumediene Airport",
+      "lat": 36.691002,
+      "lon": 3.21541,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Algiers",
+      "airport_ident": "DAAG"
+    },
+    {
+      "id": 1179,
+      "name": "Diori Hamani International Airport",
+      "lat": 13.4815,
+      "lon": 2.18361,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Niamey",
+      "airport_ident": "DRRN"
+    },
+    {
+      "id": 1180,
+      "name": "Cape Town International Airport",
+      "lat": -33.964802,
+      "lon": 18.6017,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Cape Town",
+      "airport_ident": "FACT"
+    },
+    {
+      "id": 1181,
+      "name": "King Shaka International Airport",
+      "lat": -29.614444,
+      "lon": 31.119722,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Durban",
+      "airport_ident": "FALE"
+    },
+    {
+      "id": 1182,
+      "name": "Sir Seretse Khama International Airport",
+      "lat": -24.555201,
+      "lon": 25.9182,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Gaborone",
+      "airport_ident": "FBSK"
+    },
+    {
+      "id": 1183,
+      "name": "Kenneth Kaunda International Airport",
+      "lat": -15.3308,
+      "lon": 28.4526,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Lusaka",
+      "airport_ident": "FLLS"
+    },
+    {
+      "id": 1184,
+      "name": "Ivato Airport",
+      "lat": -18.7969,
+      "lon": 47.478802,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Antananarivo",
+      "airport_ident": "FMMI"
+    },
+    {
+      "id": 1185,
+      "name": "Quatro de Fevereiro Airport",
+      "lat": -8.85837,
+      "lon": 13.2312,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Luanda",
+      "airport_ident": "FNLU"
+    },
+    {
+      "id": 1186,
+      "name": "N'Djamena International Airport",
+      "lat": 12.1337,
+      "lon": 15.034,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "N'Djamena",
+      "airport_ident": "FTTJ"
+    },
+    {
+      "id": 1187,
+      "name": "Robert Gabriel Mugabe International Airp",
+      "lat": -17.931801,
+      "lon": 31.0928,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Harare",
+      "airport_ident": "FVHA"
+    },
+    {
+      "id": 1188,
+      "name": "Hosea Kutako International Airport",
+      "lat": -22.4799,
+      "lon": 17.4709,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Windhoek",
+      "airport_ident": "FYWH"
+    },
+    {
+      "id": 1189,
+      "name": "Modibo Keita International Airport",
+      "lat": 12.5335,
+      "lon": -7.94994,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Bamako",
+      "airport_ident": "GABS"
+    },
+    {
+      "id": 1190,
+      "name": "Lungi International Airport",
+      "lat": 8.61644,
+      "lon": -13.1955,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Freetown (Lungi-Town)",
+      "airport_ident": "GFLL"
+    },
+    {
+      "id": 1191,
+      "name": "Roberts International Airport",
+      "lat": 6.23379,
+      "lon": -10.3623,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Monrovia",
+      "airport_ident": "GLRB"
+    },
+    {
+      "id": 1192,
+      "name": "Mohammed V International Airport",
+      "lat": 33.3675,
+      "lon": -7.58997,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Casablanca",
+      "airport_ident": "GMMN"
+    },
+    {
+      "id": 1193,
+      "name": "Amílcar Cabral International Airport",
+      "lat": 16.7414,
+      "lon": -22.9494,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Espargos",
+      "airport_ident": "GVAC"
+    },
+    {
+      "id": 1194,
+      "name": "Addis Ababa Bole International Airport",
+      "lat": 8.97789,
+      "lon": 38.799301,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Addis Ababa",
+      "airport_ident": "HAAB"
+    },
+    {
+      "id": 1195,
+      "name": "Djibouti-Ambouli Airport",
+      "lat": 11.5473,
+      "lon": 43.1595,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Djibouti City",
+      "airport_ident": "HDAM"
+    },
+    {
+      "id": 1196,
+      "name": "Cairo International Airport",
+      "lat": 30.121901,
+      "lon": 31.4056,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Cairo",
+      "airport_ident": "HECA"
+    },
+    {
+      "id": 1197,
+      "name": "Juba International Airport",
+      "lat": 4.87201,
+      "lon": 31.601101,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Juba",
+      "airport_ident": "HJJJ"
+    },
+    {
+      "id": 1198,
+      "name": "Moi International Airport",
+      "lat": -4.03483,
+      "lon": 39.5942,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Mombasa",
+      "airport_ident": "HKMO"
+    },
+    {
+      "id": 1199,
+      "name": "Tripoli International Airport",
+      "lat": 32.663502,
+      "lon": 13.159,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Tripoli",
+      "airport_ident": "HLLT"
+    },
+    {
+      "id": 1200,
+      "name": "Khartoum International Airport",
+      "lat": 15.5895,
+      "lon": 32.5532,
+      "is_capital": 0,
+      "is_waypoint": 0,
+      "region": "Khartoum",
+      "airport_ident": "HSSK"
+    },
+    {
+      "id": -1,
+      "name": null,
+      "lat": 2.576932262057312,
+      "lon": -3.350919035693405,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -2,
+      "name": null,
+      "lat": -0.2425861119637247,
+      "lon": 2.1555889416600458,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -3,
+      "name": null,
+      "lat": -4.031313927054505,
+      "lon": 7.579910232784336,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -4,
+      "name": null,
+      "lat": 29.62668666282171,
+      "lon": 13.826098386200186,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -5,
+      "name": null,
+      "lat": 25.04496930503751,
+      "lon": 14.894525307179215,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -6,
+      "name": null,
+      "lat": 21.520571337511207,
+      "lon": 14.976711993408365,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -7,
+      "name": null,
+      "lat": 17.819953471608585,
+      "lon": 14.812338620950058,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -8,
+      "name": null,
+      "lat": 15.000435097587545,
+      "lon": 15.14108536586668,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -9,
+      "name": null,
+      "lat": 10.683047587367813,
+      "lon": 16.7848190904498,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -10,
+      "name": null,
+      "lat": 8.920848603604664,
+      "lon": 18.839486246178694,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -11,
+      "name": null,
+      "lat": 7.775419264158614,
+      "lon": 21.633833577969995,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -12,
+      "name": null,
+      "lat": 6.453770026336251,
+      "lon": 24.674740968448766,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -13,
+      "name": null,
+      "lat": 5.4845605852665145,
+      "lon": 28.04439510384416,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -14,
+      "name": null,
+      "lat": -9.406020827532124,
+      "lon": 15.305458738324994,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -15,
+      "name": null,
+      "lat": -11.608769557236066,
+      "lon": 18.92167293240785,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -16,
+      "name": null,
+      "lat": -13.282858591811056,
+      "lon": 22.044767009115787,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -17,
+      "name": null,
+      "lat": -14.604507829633434,
+      "lon": 25.496607830740324,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -18,
+      "name": null,
+      "lat": -16.5429267117729,
+      "lon": 29.77031551465643,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -19,
+      "name": null,
+      "lat": -21.388973917121568,
+      "lon": 29.11282202482318,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -20,
+      "name": null,
+      "lat": -15.838047118267625,
+      "lon": 32.89340959136437,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -21,
+      "name": null,
+      "lat": -13.459078490187373,
+      "lon": 34.454956629718325,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -22,
+      "name": null,
+      "lat": -10.815780014542646,
+      "lon": 35.85213029561397,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -23,
+      "name": null,
+      "lat": -7.9962616405216025,
+      "lon": 37.82461076511372,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -24,
+      "name": null,
+      "lat": -5.617293012441351,
+      "lon": 39.468344489696825,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -25,
+      "name": null,
+      "lat": 10.506827688991503,
+      "lon": -10.33678736517166,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -26,
+      "name": null,
+      "lat": 13.238236113824385,
+      "lon": -2.4468654871726905,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -30,
+      "name": null,
+      "lat": 11.916586876002025,
+      "lon": 36.09869035430144,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -31,
+      "name": null,
+      "lat": 5.4845605852665145,
+      "lon": 36.26306372675975,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -32,
+      "name": null,
+      "lat": 29.802906561198025,
+      "lon": 16.86700577667895,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -33,
+      "name": null,
+      "lat": 28.569367272563817,
+      "lon": 21.05852677436591,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -34,
+      "name": null,
+      "lat": 28.48125732337566,
+      "lon": 24.83911434090708,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -35,
+      "name": null,
+      "lat": 28.92180706931645,
+      "lon": 29.03063533859403,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -36,
+      "name": null,
+      "lat": 26.01417874610725,
+      "lon": 30.09906225957306,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -37,
+      "name": null,
+      "lat": 22.754110626145415,
+      "lon": 30.427809004489674,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -38,
+      "name": null,
+      "lat": 19.582152455371737,
+      "lon": 31.08530249432294,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -39,
+      "name": null,
+      "lat": 8.744628705228347,
+      "lon": 13.004231523908622,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -40,
+      "name": null,
+      "lat": 4.427241195008627,
+      "lon": 12.182364661617065,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -41,
+      "name": null,
+      "lat": -0.8593557562808272,
+      "lon": 12.34673803407538,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -42,
+      "name": null,
+      "lat": -5.1767432665005515,
+      "lon": 12.511111406533686,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -43,
+      "name": null,
+      "lat": -22.9749530025084,
+      "lon": 19.33260636355363,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -44,
+      "name": null,
+      "lat": -23.76794254520182,
+      "lon": 22.620073812719866,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -45,
+      "name": null,
+      "lat": -32.22649766726495,
+      "lon": 19.579166422241094,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -46,
+      "name": null,
+      "lat": -29.14264944567944,
+      "lon": 22.291327067803245,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -47,
+      "name": null,
+      "lat": -26.76368081759918,
+      "lon": 24.592554282219602,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -48,
+      "name": null,
+      "lat": -7.291382047016349,
+      "lon": 42.42706519394645,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -49,
+      "name": null,
+      "lat": -10.287120319413695,
+      "lon": 44.152985604758726,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -50,
+      "name": null,
+      "lat": -15.485607321515005,
+      "lon": 45.961092701800155,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -51,
+      "name": null,
+      "lat": 14.383665453270439,
+      "lon": 4.621189528534721,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -52,
+      "name": null,
+      "lat": 17.64373357323227,
+      "lon": 7.497723546555182,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -53,
+      "name": null,
+      "lat": 22.48978077858094,
+      "lon": 10.374257564575636,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -54,
+      "name": null,
+      "lat": 27.952597628246714,
+      "lon": 11.9358046029296,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -55,
+      "name": null,
+      "lat": 15.79342464028096,
+      "lon": -7.871186778296982,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -56,
+      "name": null,
+      "lat": 20.198922099688843,
+      "lon": -7.542440033380357,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -57,
+      "name": null,
+      "lat": 24.956859355849353,
+      "lon": -7.6246267196095125,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -58,
+      "name": null,
+      "lat": 29.18613691688092,
+      "lon": -7.871186778296982,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -59,
+      "name": null,
+      "lat": 26.19039864448356,
+      "lon": 35.441196864468196,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -60,
+      "name": null,
+      "lat": 21.696791235887524,
+      "lon": 38.39991756871781,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -61,
+      "name": null,
+      "lat": 17.3794037256678,
+      "lon": 40.454584724446704,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -62,
+      "name": null,
+      "lat": 14.031225656517812,
+      "lon": 43.084558683779704,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -63,
+      "name": null,
+      "lat": 0.37418353235337776,
+      "lon": 33.139969650051825,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -64,
+      "name": null,
+      "lat": -2.621554740043983,
+      "lon": 35.441196864468196,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -65,
+      "name": null,
+      "lat": 4.603461093384944,
+      "lon": 39.386157803467675,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -66,
+      "name": null,
+      "lat": 0.9909531766704731,
+      "lon": 39.55053117592598,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -67,
+      "name": null,
+      "lat": 34.34848051827555,
+      "lon": 3.1581422237710903,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -68,
+      "name": null,
+      "lat": 30.684172612529863,
+      "lon": 2.909562454457948,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -69,
+      "name": null,
+      "lat": 26.95324092667971,
+      "lon": 2.598837742816528,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -70,
+      "name": null,
+      "lat": 23.28893302093402,
+      "lon": 2.350257973503396,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -71,
+      "name": null,
+      "lat": 19.957744015710666,
+      "lon": 2.350257973503396,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -72,
+      "name": null,
+      "lat": 32.882757355977276,
+      "lon": -3.056352009057335,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -73,
+      "name": null,
+      "lat": 33.94873783764875,
+      "lon": 0.4859097036548725,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -74,
+      "name": null,
+      "lat": 33.61561893712641,
+      "lon": 5.7682298015590305,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -75,
+      "name": null,
+      "lat": 32.2165195549326,
+      "lon": 9.372636456599523,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -76,
+      "name": null,
+      "lat": -18.79662484709265,
+      "lon": 36.69167017242409,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -77,
+      "name": null,
+      "lat": -18.79662484709265,
+      "lon": 41.42104412360531,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -78,
+      "name": null,
+      "lat": 14.210023974001508,
+      "lon": 18.313530917365178,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -79,
+      "name": null,
+      "lat": 15.17087082174901,
+      "lon": 22.83553538299759,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -80,
+      "name": null,
+      "lat": 15.913343385917535,
+      "lon": 27.927882754205257,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -81,
+      "name": null,
+      "lat": 7.8353231010228015,
+      "lon": -7.682358459998978,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -82,
+      "name": null,
+      "lat": 6.3249518413528705,
+      "lon": -2.9368078951028735,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -83,
+      "name": null,
+      "lat": 6.960897634898103,
+      "lon": 1.6975188284284783,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -84,
+      "name": null,
+      "lat": 6.523684901835757,
+      "lon": 6.072323255442079,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -85,
+      "name": null,
+      "lat": 8.272535834085144,
+      "lon": 9.149516199866895,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -86,
+      "name": null,
+      "lat": 10.299613051010574,
+      "lon": 12.523306054597718,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -87,
+      "name": null,
+      "lat": -12.766463920107633,
+      "lon": 15.768007798207769,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -88,
+      "name": null,
+      "lat": -16.13945666216049,
+      "lon": 17.41373363118933,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    },
+    {
+      "id": -89,
+      "name": null,
+      "lat": -19.668125992308113,
+      "lon": 18.091385444769983,
+      "is_capital": false,
+      "is_waypoint": true,
+      "region": null,
+      "airport_ident": null
+    }
+  ],
+  "roads": [
+    {
+      "id": 1,
+      "node_a_id": 1192,
+      "node_b_id": 1179,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 2,
+      "node_a_id": 1199,
+      "node_b_id": 1179,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 3,
+      "node_a_id": 1186,
+      "node_b_id": 1179,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 4,
+      "node_a_id": 1186,
+      "node_b_id": 1185,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 5,
+      "node_a_id": 1185,
+      "node_b_id": 1188,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 6,
+      "node_a_id": 1180,
+      "node_b_id": 1188,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 7,
+      "node_a_id": 1180,
+      "node_b_id": 1181,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 8,
+      "node_a_id": 1182,
+      "node_b_id": 1184,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 9,
+      "node_a_id": 1181,
+      "node_b_id": 1184,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 10,
+      "node_a_id": 1182,
+      "node_b_id": 1181,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 11,
+      "node_a_id": 1183,
+      "node_b_id": 1182,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 12,
+      "node_a_id": 1183,
+      "node_b_id": 1197,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 13,
+      "node_a_id": 1186,
+      "node_b_id": 1200,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 14,
+      "node_a_id": 1197,
+      "node_b_id": 1200,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 15,
+      "node_a_id": 1197,
+      "node_b_id": 1194,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 16,
+      "node_a_id": 1198,
+      "node_b_id": 1197,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 17,
+      "node_a_id": 1194,
+      "node_b_id": 1195,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 18,
+      "node_a_id": 1198,
+      "node_b_id": 1195,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 19,
+      "node_a_id": 1200,
+      "node_b_id": 1196,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 20,
+      "node_a_id": 1199,
+      "node_b_id": 1196,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 21,
+      "node_a_id": 1200,
+      "node_b_id": 1195,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 22,
+      "node_a_id": 1185,
+      "node_b_id": 1197,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 23,
+      "node_a_id": 1186,
+      "node_b_id": 1191,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 24,
+      "node_a_id": 1190,
+      "node_b_id": 1193,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 25,
+      "node_a_id": 1192,
+      "node_b_id": 1193,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 26,
+      "node_a_id": 1191,
+      "node_b_id": 1190,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 27,
+      "node_a_id": 1191,
+      "node_b_id": -1,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 28,
+      "node_a_id": -1,
+      "node_b_id": -2,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 29,
+      "node_a_id": -2,
+      "node_b_id": -3,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 30,
+      "node_a_id": -3,
+      "node_b_id": 1185,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 31,
+      "node_a_id": 1192,
+      "node_b_id": 1178,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 32,
+      "node_a_id": 1178,
+      "node_b_id": 1199,
+      "road_type_id": 3,
+      "cost": 10
+    },
+    {
+      "id": 37,
+      "node_a_id": 1189,
+      "node_b_id": -26,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 38,
+      "node_a_id": -26,
+      "node_b_id": 1179,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 39,
+      "node_a_id": -25,
+      "node_b_id": 1189,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 40,
+      "node_a_id": -25,
+      "node_b_id": 1190,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 41,
+      "node_a_id": 1186,
+      "node_b_id": -8,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 42,
+      "node_a_id": -8,
+      "node_b_id": -7,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 43,
+      "node_a_id": -7,
+      "node_b_id": -6,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 44,
+      "node_a_id": -6,
+      "node_b_id": -5,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 45,
+      "node_a_id": -5,
+      "node_b_id": -4,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 46,
+      "node_a_id": -4,
+      "node_b_id": 1199,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 47,
+      "node_a_id": 1186,
+      "node_b_id": -9,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 48,
+      "node_a_id": -9,
+      "node_b_id": -10,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 49,
+      "node_a_id": -10,
+      "node_b_id": -11,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 50,
+      "node_a_id": -11,
+      "node_b_id": -12,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 51,
+      "node_a_id": -12,
+      "node_b_id": -13,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 52,
+      "node_a_id": -13,
+      "node_b_id": 1197,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 53,
+      "node_a_id": 1198,
+      "node_b_id": -24,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 54,
+      "node_a_id": -24,
+      "node_b_id": -23,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 55,
+      "node_a_id": -23,
+      "node_b_id": -22,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 56,
+      "node_a_id": -22,
+      "node_b_id": -21,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 57,
+      "node_a_id": -21,
+      "node_b_id": -20,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 58,
+      "node_a_id": -20,
+      "node_b_id": 1187,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 59,
+      "node_a_id": 1187,
+      "node_b_id": -19,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 60,
+      "node_a_id": -19,
+      "node_b_id": 1182,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 61,
+      "node_a_id": 1187,
+      "node_b_id": -18,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 62,
+      "node_a_id": -18,
+      "node_b_id": 1183,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 63,
+      "node_a_id": 1183,
+      "node_b_id": -17,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 64,
+      "node_a_id": -17,
+      "node_b_id": -16,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 65,
+      "node_a_id": -16,
+      "node_b_id": -15,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 66,
+      "node_a_id": -15,
+      "node_b_id": -14,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 67,
+      "node_a_id": -14,
+      "node_b_id": 1185,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 68,
+      "node_a_id": 1200,
+      "node_b_id": -30,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 69,
+      "node_a_id": -30,
+      "node_b_id": 1194,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 70,
+      "node_a_id": 1194,
+      "node_b_id": -31,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 71,
+      "node_a_id": 1197,
+      "node_b_id": -31,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 72,
+      "node_a_id": 1189,
+      "node_b_id": -55,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 73,
+      "node_a_id": -56,
+      "node_b_id": -55,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 74,
+      "node_a_id": -56,
+      "node_b_id": -57,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 75,
+      "node_a_id": -58,
+      "node_b_id": -57,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 76,
+      "node_a_id": -58,
+      "node_b_id": 1192,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 77,
+      "node_a_id": 1179,
+      "node_b_id": -51,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 78,
+      "node_a_id": -51,
+      "node_b_id": -52,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 79,
+      "node_a_id": -52,
+      "node_b_id": -53,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 80,
+      "node_a_id": -53,
+      "node_b_id": -54,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 81,
+      "node_a_id": -54,
+      "node_b_id": 1199,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 82,
+      "node_a_id": 1199,
+      "node_b_id": -32,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 83,
+      "node_a_id": -32,
+      "node_b_id": -33,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 84,
+      "node_a_id": -33,
+      "node_b_id": -34,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 85,
+      "node_a_id": -34,
+      "node_b_id": -35,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 86,
+      "node_a_id": -35,
+      "node_b_id": 1196,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 87,
+      "node_a_id": 1196,
+      "node_b_id": -36,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 88,
+      "node_a_id": -36,
+      "node_b_id": -37,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 89,
+      "node_a_id": -37,
+      "node_b_id": -38,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 90,
+      "node_a_id": -38,
+      "node_b_id": 1200,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 91,
+      "node_a_id": 1196,
+      "node_b_id": -59,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 92,
+      "node_a_id": -60,
+      "node_b_id": -59,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 93,
+      "node_a_id": -60,
+      "node_b_id": -61,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 94,
+      "node_a_id": -61,
+      "node_b_id": -62,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 95,
+      "node_a_id": -62,
+      "node_b_id": 1195,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 96,
+      "node_a_id": 1198,
+      "node_b_id": -48,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 97,
+      "node_a_id": -48,
+      "node_b_id": -49,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 98,
+      "node_a_id": -49,
+      "node_b_id": -50,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 99,
+      "node_a_id": -50,
+      "node_b_id": 1184,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 100,
+      "node_a_id": 1186,
+      "node_b_id": -39,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 101,
+      "node_a_id": -39,
+      "node_b_id": -40,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 102,
+      "node_a_id": -40,
+      "node_b_id": -41,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 103,
+      "node_a_id": -41,
+      "node_b_id": -42,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 104,
+      "node_a_id": -42,
+      "node_b_id": 1185,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 105,
+      "node_a_id": 1197,
+      "node_b_id": -63,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 106,
+      "node_a_id": -63,
+      "node_b_id": -64,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 107,
+      "node_a_id": -64,
+      "node_b_id": 1198,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 108,
+      "node_a_id": 1194,
+      "node_b_id": -65,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 109,
+      "node_a_id": -65,
+      "node_b_id": -66,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 110,
+      "node_a_id": 1198,
+      "node_b_id": -66,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 111,
+      "node_a_id": 1178,
+      "node_b_id": -67,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 112,
+      "node_a_id": -67,
+      "node_b_id": -68,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 113,
+      "node_a_id": -68,
+      "node_b_id": -69,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 114,
+      "node_a_id": -69,
+      "node_b_id": -70,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 115,
+      "node_a_id": -70,
+      "node_b_id": -71,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 116,
+      "node_a_id": -71,
+      "node_b_id": 1179,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 117,
+      "node_a_id": -72,
+      "node_b_id": -73,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 118,
+      "node_a_id": -73,
+      "node_b_id": 1178,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 119,
+      "node_a_id": 1192,
+      "node_b_id": -72,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 120,
+      "node_a_id": 1178,
+      "node_b_id": -74,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 121,
+      "node_a_id": -74,
+      "node_b_id": -75,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 122,
+      "node_a_id": -75,
+      "node_b_id": 1199,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 123,
+      "node_a_id": 1188,
+      "node_b_id": -43,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 124,
+      "node_a_id": -43,
+      "node_b_id": -44,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 125,
+      "node_a_id": -44,
+      "node_b_id": 1182,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 126,
+      "node_a_id": 1182,
+      "node_b_id": -47,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 127,
+      "node_a_id": -47,
+      "node_b_id": -46,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 128,
+      "node_a_id": -46,
+      "node_b_id": -45,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 129,
+      "node_a_id": -45,
+      "node_b_id": 1180,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 130,
+      "node_a_id": -76,
+      "node_b_id": 1187,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 131,
+      "node_a_id": -76,
+      "node_b_id": -77,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 132,
+      "node_a_id": -77,
+      "node_b_id": 1184,
+      "road_type_id": 2,
+      "cost": 5
+    },
+    {
+      "id": 133,
+      "node_a_id": 1186,
+      "node_b_id": -78,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 134,
+      "node_a_id": -79,
+      "node_b_id": -78,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 135,
+      "node_a_id": -79,
+      "node_b_id": -80,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 136,
+      "node_a_id": -80,
+      "node_b_id": 1200,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 137,
+      "node_a_id": 1190,
+      "node_b_id": -81,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 138,
+      "node_a_id": -81,
+      "node_b_id": -82,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 139,
+      "node_a_id": -82,
+      "node_b_id": -83,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 140,
+      "node_a_id": -83,
+      "node_b_id": -84,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 141,
+      "node_a_id": -84,
+      "node_b_id": -85,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 142,
+      "node_a_id": -85,
+      "node_b_id": -86,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 143,
+      "node_a_id": -86,
+      "node_b_id": 1186,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 144,
+      "node_a_id": 1185,
+      "node_b_id": -87,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 145,
+      "node_a_id": -87,
+      "node_b_id": -88,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 146,
+      "node_a_id": -88,
+      "node_b_id": -89,
+      "road_type_id": 1,
+      "cost": 3
+    },
+    {
+      "id": 147,
+      "node_a_id": -89,
+      "node_b_id": 1188,
+      "road_type_id": 1,
+      "cost": 3
+    }
+  ],
+  "routes": []
+}

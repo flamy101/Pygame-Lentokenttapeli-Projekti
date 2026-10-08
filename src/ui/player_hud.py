@@ -120,7 +120,7 @@ class PlayerHUD(UIElement):
 
     def _draw_inventory(self, screen):
         panel = self.inventory_rect
-        pygame.draw.rect(screen, (65, 45, 50), panel)
+        pygame.draw.rect(screen, (66, 57, 52), panel)
         pygame.draw.rect(screen, (220, 170, 95), panel, 3)
 
         badge_radius = max(5, min(12, (panel.height - 24) // 2))
@@ -140,7 +140,8 @@ class PlayerHUD(UIElement):
         for index, (icon_key, quantity) in enumerate(rows):
             col, row = index % columns, index // columns
             left = panel.left + padding + col * cell_size
-            top = panel.top + 36 + row * cell_size
+            # Keep inventory cards below the active-player badge at the top.
+            top = panel.top + 68 + row * cell_size
             if top + cell_size > panel.bottom - padding:
                 break
 

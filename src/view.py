@@ -69,7 +69,7 @@ class Graphics:
         """
 
         assert self.screen is not None
-        self.screen.fill((0, 0, 0))
+        self.screen.fill((18, 32, 32))
         if self.scene_manager.current is not None:
             self.scene_manager.current.draw(self.screen)
         pygame.display.flip()

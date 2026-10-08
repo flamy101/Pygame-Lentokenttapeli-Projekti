@@ -42,6 +42,9 @@ class Route:
 
     def _bake_route_geometry(self):
         """Extracts and concatenates points from all segments into one continuous line."""
+        self.segment_lengths = []
+        self.total_distance = 0.0
+        self.route_points = []
         for i, road in enumerate(self.segments):
             pts = road.points
             if not pts and road.segments:

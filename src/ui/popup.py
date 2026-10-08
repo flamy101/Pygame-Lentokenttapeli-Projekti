@@ -27,6 +27,7 @@ class UIPopup(UIElement):
         self.message = message
         self.image = image
         self.font = assets.font("default")
+        self.button_font = assets.fonts.get("small", self.font)
         self.child_buttons: list[Button] = []
 
         count = len(buttons)
@@ -53,7 +54,7 @@ class UIPopup(UIElement):
                         callback=callback,
                         z_index=z_index + 1,
                         text=label,
-                        font=self.font,
+                        font=self.button_font,
                         color=(105, 65, 55),
                         hover_color=(145, 90, 65),
                     )

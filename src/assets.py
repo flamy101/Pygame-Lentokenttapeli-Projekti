@@ -33,9 +33,14 @@ class Assets:
         Load every shared resource once. Safe to call only after
         pygame.font.init() has run.
         """
-        self.fonts["default"] = pygame.font.SysFont("Arial", 20)
-        self.fonts["heading"] = pygame.font.SysFont("Arial", 36, bold=True)
+        pixel_font_path = os.path.join(
+            self.ASSET_DIR, "aseprite-src-files", "PressStart2P-Regular.ttf"
+        )
+        self.fonts["default"] = pygame.font.Font(pixel_font_path, 20)
+        self.fonts["heading"] = pygame.font.Font(pixel_font_path, 36)
         self.fonts["small"] = pygame.font.SysFont("Arial", 14)
+        self.fonts["airport"] = pygame.font.Font(pixel_font_path, 21)
+        self.fonts["dice"] = pygame.font.Font(pixel_font_path, 44)
 
         self.images["map"] = pygame.image.load(
             os.path.join(self.ASSET_DIR, "map-264.png")

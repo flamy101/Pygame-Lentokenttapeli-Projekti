@@ -68,6 +68,35 @@ class TurnManager:
                 arrow.kill()
         self.route_arrows.clear()
 
+    @staticmethod
+    def _route_node_path(route):
+        """Return the ordered node IDs for a route, plus whether it is connected."""
+        start_node = getattr(route, "start_node", None)
+        if start_node is None:
+            return (), False
+
+        node_id = lambda node: str(getattr(node, "id", node))
+        path = [node_id(start_node)]
+        current = start_node
+        remaining = list(getattr(route, "segments", ()))
+        while remaining:
+            for index, road in enumerate(remaining):
+                if road.node_a == current:
+                    current = road.node_b
+                elif road.node_b == current:
+                    current = road.node_a
+                else:
+                    continue
+                path.append(node_id(current))
+                remaining.pop(index)
+                break
+            else:
+                return tuple(path), False
+
+        expected_end = getattr(route, "end_node", None)
+        connected = expected_end is None or path[-1] == node_id(expected_end)
+        return tuple(path), connected
+
     def _show_routes(self, routes):
         self._clear_arrows()
         self.available_routes = [
@@ -82,10 +111,33 @@ class TurnManager:
                 )
             )
         ]
+        route_paths = [
+            (route, *self._route_node_path(route))
+            for route in self.available_routes
+        ]
+        endpoint_routes = []
+        for route, path, connected in route_paths:
+            is_intermediate = connected and any(
+                other_connected
+                and len(other_path) > len(path)
+                and other_path[: len(path)] == path
+                for other_route, other_path, other_connected in route_paths
+                if other_route is not route
+            )
+            if not is_intermediate:
+                endpoint_routes.append(route)
+
+        suppressed = len(self.available_routes) - len(endpoint_routes)
+        self.available_routes = endpoint_routes
         if not self.available_routes:
             print("[DEBUG] No available routes found. Advancing turn...")
             self._advance_turn()
             return
+
+        print(
+            f"[DEBUG] Showing {len(self.available_routes)} route endpoint(s); "
+            f"suppressed {suppressed} intermediate endpoint(s)."
+        )
 
         if self.current_player is None:
             print("[WARNING] Active player missing; route arrows cannot be displayed.")

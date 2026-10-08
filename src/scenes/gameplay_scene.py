@@ -15,13 +15,15 @@ from entities.route import Route
 from entities.token import Token
 import game_events
 from scenes import Scene
-from ui.elements import Button, CurrentPlayerBadge, Text
+from ui.elements import Button, CurrentPlayerBadge, DiceDisplay
 from ui.map import Map
 from ui.player_hud import PlayerHUD
 from ui.popup import UIPopup
 
 
 class GameScene(Scene):
+    SIDEBAR_COLOR = (66, 57, 52)
+
     def __init__(self, ev_manager, ui_manager, assets, players=None, route_finder=None, db_connector=None):
         super().__init__(ev_manager, ui_manager, assets)
         self.ev_manager.register_listener(self)
@@ -48,6 +50,7 @@ class GameScene(Scene):
         self.game_id = None
         self.notification_text = ""
         self.notification_seconds = 0.0
+        self.winner_id = None
 
     def _get_active_player(self):
         if self.turn_manager is not None and self.turn_manager.current_player is not None:
@@ -76,6 +79,8 @@ class GameScene(Scene):
     def notify(self, event):
         if isinstance(event, base_events.TickEvent):
             self.notification_seconds = max(0.0, self.notification_seconds - event.dt)
+            if self.dice_text is not None:
+                self.dice_text.update(event.dt)
             return
 
         if isinstance(event, game_events.CurrentPlayerChangedEvent):
@@ -105,35 +110,47 @@ class GameScene(Scene):
                 node = self.nodes.get(str(current_player.pending_token_node_id))
                 if event.value >= 4 and node is not None:
                     self._show_notification(
-                        f"{current_player.name} rolled {event.value}: token opened"
+                        f"{current_player.name} rolled {event.value}: token opened (4–6)"
                     )
                     current_player.pending_token = None
                     current_player.pending_token_node_id = None
                     self._reveal_token(current_player, node, token)
                 else:
                     self._show_notification(
-                        f"{current_player.name} rolled {event.value}: token needs 4, 5, or 6"
+                        f"{current_player.name} rolled {event.value}: no 4–6; turn passes"
                     )
+                    # The token remains unclaimed on the airport, but this
+                    # player's roll attempt is complete; do not carry it into
+                    # their next turn as a stale pending roll.
+                    current_player.pending_token = None
+                    current_player.pending_token_node_id = None
                     self._show_token_result(
                         current_player, node, token,
                         "You need a 4, 5, or 6 to open this token. The token stays here.",
                         resolve=True,
+                        image=self.assets.image("token-backside"),
                     )
                 return
         elif isinstance(event, game_events.PlayerArrivedEvent):
+            if self.winner_id is not None:
+                return
             player = self._lookup_player(event.player_id)
             node = self.nodes.get(str(event.city_node_id))
             if node is not None:
-                if player.has_star and (node.name or "").strip().lower() in {"cairo", "tangier"}:
+                has_star = player.has_star or any(
+                    "star of africa" in item_name.lower()
+                    for item_name in player.items
+                )
+                if has_star and self._is_victory_node(node):
                     player.has_won = True
+                    self.winner_id = player.id
                     if self.db_connector is not None:
-                        self.db_connector.set_player_won(player.id)
-                        self.db_connector.set_game_finished(int(player.game_id))
-                    self._show_token_result(
-                        player, node,
-                        Token(-1, "Victory", "neutral", 0, self.assets.image("token-empty")),
-                        f"{player.name} brought the Star of Africa to {node.name} and wins!",
-                    )
+                        try:
+                            self.db_connector.set_player_won(player.id)
+                            self.db_connector.set_game_finished(int(player.game_id))
+                        except Exception as error:
+                            print(f"[WARNING] Could not persist the win to the database: {error}")
+                    self._show_win_modal(player, node)
                     return
                 self._offer_airport_token(player, node)
         elif isinstance(event, game_events.TokenResolvedEvent):
@@ -163,6 +180,44 @@ class GameScene(Scene):
         width, height = screen.get_size() if screen else (1200, 900)
         return pygame.Rect(width // 2 - 230, height // 2 - 130, 460, 260)
 
+    @staticmethod
+    def _is_victory_node(node):
+        """Recognize Cairo and Tangier whether the map uses city or airport names."""
+        normalize = lambda value: "".join(
+            character for character in str(value or "").lower()
+            if character.isalnum()
+        )
+        name = normalize(node.name)
+        region = normalize(getattr(node, "region", ""))
+        airport_ident = normalize(getattr(node, "airport_ident", ""))
+        return (
+            name.startswith(("cairo", "tangier"))
+            or region in {"cairo", "tangier"}
+            or airport_ident in {"cai", "heca", "tng", "gmtt"}
+        )
+
+    def _show_win_modal(self, player, node):
+        print(f"[NOTICE] {player.name} wins by bringing the Star of Africa to {node.name}.")
+        if self.ui_manager is None:
+            return
+
+        def exit_to_menu():
+            self.ui_manager.close_modal()
+            self.ev_manager.post(game_events.ChangeSceneEvent("menu"))
+
+        self.ui_manager.open_modal(
+            UIPopup(
+                self.ev_manager,
+                self._popup_rect(),
+                self.assets,
+                f"{player.name} wins! The Star of Africa has reached {node.name}.",
+                [("Exit to Menu", exit_to_menu)],
+                image=self.assets.image("token-empty"),
+            )
+        )
+        if self.turn_manager is not None:
+            self.turn_manager.awaiting_token_resolution = True
+
     def _offer_airport_token(self, player, node):
         token = next((item for item in node.tokens if not item.is_claimed), None)
         if token is None or self.ui_manager is None or self.ui_manager.modal is not None:
@@ -172,7 +227,13 @@ class GameScene(Scene):
             self.ui_manager.close_modal()
             player.pending_token = token
             player.pending_token_node_id = node.id
-            self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
+            if self.turn_manager is not None:
+                self.turn_manager.awaiting_token_resolution = False
+            self._show_notification(
+                f"{player.name} is rolling to open the token. A 4–6 succeeds.",
+                duration=4.0,
+            )
+            self.roll_dice()
 
         def skip():
             self.ui_manager.close_modal()
@@ -195,7 +256,7 @@ class GameScene(Scene):
         if self.turn_manager is not None:
             self.turn_manager.awaiting_token_resolution = True
 
-    def _show_token_result(self, player, node, token, message, resolve=False):
+    def _show_token_result(self, player, node, token, message, resolve=False, image=None):
         if self.ui_manager is None:
             if resolve:
                 self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
@@ -206,7 +267,7 @@ class GameScene(Scene):
                 self.ev_manager.post(game_events.TokenResolvedEvent(player.id, node.id))
         self.ui_manager.open_modal(UIPopup(
             self.ev_manager, self._popup_rect(), self.assets, message,
-            [("Continue", finish)], image=token.texture,
+            [("Continue", finish)], image=token.texture if image is None else image,
         ))
         if self.turn_manager is not None:
             self.turn_manager.awaiting_token_resolution = True
@@ -264,6 +325,21 @@ class GameScene(Scene):
                 return player
         raise KeyError(f"No player found for turn id {player_id!r}")
 
+    def _sidebar_column_left(self, screen_width):
+        margin = 20
+        map_right = self.map_container.right if self.map_container else 850
+        return max(round(screen_width * 0.75), map_right + margin)
+
+    def draw(self, screen):
+        column_left = self._sidebar_column_left(screen.get_width())
+        sidebar_left = max(0, column_left - 20)
+        pygame.draw.rect(
+            screen,
+            self.SIDEBAR_COLOR,
+            pygame.Rect(sidebar_left, 0, screen.get_width() - sidebar_left, screen.get_height()),
+        )
+        super().draw(screen)
+
     def _load_map_from_db(self, db):
         """Fetch nodes and roads from MariaDB and map them to Node objects."""
         print("[DEBUG] DB Map Loading: Fetching nodes and roads from database...")
@@ -301,7 +377,9 @@ class GameScene(Scene):
                 airport_ident=data.get("airport_ident"),
                 radius=38 if not data.get("is_waypoint") else 26,
                 color=(255, 200, 0) if data.get("is_capital") else (235, 235, 220),
-                font=self.assets.font("small"),
+                font=self.assets.font(
+                    "small" if data.get("is_waypoint") else "airport"
+                ),
             )
 
         for n_id, node in list(self.nodes.items())[:5]:
@@ -446,7 +524,9 @@ class GameScene(Scene):
                     f"{len(seen_roads)} physical segment(s)."
                 )
 
-        # Rebuild every multi-hop edge after the route waypoints have moved.
+        # Rebuild all roads after waypoint positions have settled. A direct,
+        # curved road can also be shared by a multi-hop route, so rebuilding
+        # only the multi-hop roads leaves stale endpoints in that case.
         direct_road_ids = {
             segment.id
             for by_type in corridors.values()
@@ -456,8 +536,35 @@ class GameScene(Scene):
             for segment in route.segments
         }
         for road in self.roads:
-            if road.id not in direct_road_ids:
+            if road.id in direct_road_ids:
+                # Preserve the lane curve while baking against the final node
+                # coordinates (one of its endpoints may have moved).
+                road.set_curve(road.curve)
+            else:
                 road.set_curve(0.0)
+
+        # Route preview lines cache their polyline and distances from the road
+        # geometry, so refresh them after all roads have been rebuilt.
+        for route in self.routes.values():
+            route._bake_route_geometry()
+
+        misaligned_roads = [
+            road.id
+            for road in self.roads
+            if not road.points
+            or road.points[0] != (road.node_a.pos_x, road.node_a.pos_y)
+            or road.points[-1] != (road.node_b.pos_x, road.node_b.pos_y)
+        ]
+        if misaligned_roads:
+            print(
+                f"[WARNING] {len(misaligned_roads)} road geometries have endpoints "
+                f"misaligned with their waypoints: {misaligned_roads}"
+            )
+        else:
+            print(
+                f"[DEBUG] Road geometry endpoint alignment OK "
+                f"({len(self.roads)} roads checked)."
+            )
 
         print(
             f"[DEBUG] Parallel road diagnostics: {parallel_count} city corridors "
@@ -577,8 +684,7 @@ class GameScene(Scene):
         screen = pygame.display.get_surface()
         screen_width, screen_height = screen.get_size() if screen else (1200, 900)
         margin = 20
-        map_right = self.map_container.right if self.map_container else 850
-        column_left = max(round(screen_width * 0.75), map_right + margin)
+        column_left = self._sidebar_column_left(screen_width)
         column_width = max(140, screen_width - column_left - margin)
         panel_height = max(180, min(510, screen_height - 390))
 
@@ -646,9 +752,11 @@ class GameScene(Scene):
 
         screen = pygame.display.get_surface()
         screen_width, screen_height = screen.get_size() if screen else (1200, 900)
-        column_left = round(screen_width * 0.75)
+        column_left = self._sidebar_column_left(screen_width)
         inventory_height = max(180, min(510, screen_height - 390))
         controls_y = 20 + inventory_height + 20
+        dice_width = min(240, max(160, screen_width - column_left - 30))
+        dice_x = column_left + max(0, (screen_width - column_left - dice_width) // 2)
 
         if self.exit_button is None:
             self.exit_button = Button(
@@ -664,22 +772,24 @@ class GameScene(Scene):
 
         if self.dice_button is None:
             self.dice_button = Button(
-                pygame.Rect(column_left, controls_y + 70, 200, 60),
+                pygame.Rect(dice_x - 10, controls_y + 92, dice_width + 20, 68),
                 callback=self.roll_dice,
                 text="ROLL DICE",
                 font=self.assets.font("default"),
                 z_index=10,
-                color=(0, 100, 200),
-                hover_color=(0, 150, 255),
+                color=(145, 74, 47),
+                hover_color=(180, 98, 58),
+                text_color=(255, 244, 213),
+                border_color=(224, 180, 104),
+                border_width=3,
+                border_radius=10,
             )
             self.elements.append(self.dice_button)
 
         if self.dice_text is None:
-            self.dice_text = Text(
-                pygame.Rect(column_left, controls_y, 200, 50),
-                fontsize=30,
-                fontcolor=(255, 255, 255),
-                text="0",
+            self.dice_text = DiceDisplay(
+                pygame.Rect(dice_x, controls_y, dice_width, 78),
+                font=self.assets.font("dice"),
             )
             self.elements.append(self.dice_text)
 

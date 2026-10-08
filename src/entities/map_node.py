@@ -62,7 +62,7 @@ class Node:
         if self.highlighted:
             highlight_radius = self.radius + 5
             pygame.draw.circle(
-                surface, (255, 215, 0), (self.pos_x, self.pos_y), highlight_radius, 2
+                surface, (255, 0, 255), (self.pos_x, self.pos_y), highlight_radius, 2
             )
 
         if self.is_waypoint:
